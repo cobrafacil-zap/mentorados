@@ -8,7 +8,14 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const session = await getServerSession(authOptions);
+  let session = null;
+
+  try {
+    session = await getServerSession(authOptions);
+  } catch (error) {
+    console.error("Erro ao verificar sessão:", error);
+  }
+
   if (!session) redirect("/admin/login");
 
   return (

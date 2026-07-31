@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  createdAt DateTime @default(now())
+}
+
+model Mentorado {
+  id              String   @id @default(cuid())
+  slug            String   @unique
+  nome            String
+  ativo           Boolean  @default(true)
+
+  tituloHero      String   @default("APROVEITE AGORA AS MELHORES PROMOÇÕES DE 2026!")
+  tituloSecao     String   @default("🤑 GRUPO VIP DE PROMOÇÕES E CUPONS")
+  texto1          String   @default("Produtos com 50%, 60% e 70% OFF")
+  texto2          String   @default("MAIS DE 50 MIL MEMBROS APROVEITANDO AS OFERTAS, ENTRE JÁ!")
+  texto3          String   @default("JÁ SOMOS +50 MIL MEMBROS")
+  imagemUrl       String?
+  linkCta         String
+
+  corTopo         String   @default("#ff0000")
+  corFundo        String   @default("#000000")
+  corBotao        String   @default("#29E843")
+  corBotaoHover   String   @default("#02FF07")
+  corTexto        String   @default("#FFFFFF")
+  corTextoSecundario String @default("#DADADA")
+
+  pixelId         String?
+
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}

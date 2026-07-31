@@ -1,36 +1,76 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Painel de Mentorados - Método GL
 
-## Getting Started
+Sistema multi-tenant para criar páginas de captura individuais para cada mentorado, com subdomínio automático e Meta Pixel individual.
 
-First, run the development server:
+## Funcionalidades
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+- **Painel administrativo** protegido por login (`/admin`)
+- **CRUD de mentorados** com todos os textos, cores, imagem e link editáveis
+- **Subdomínio automático** no formato `slug.metodogl.online`
+- **Meta Pixel individual** por mentorado
+- **Upload de imagens** via Supabase Storage
+
+## Stack
+
+- Next.js 14+ (App Router)
+- TypeScript
+- Tailwind CSS
+- Prisma ORM
+- PostgreSQL (Supabase)
+- NextAuth.js (Credentials)
+- Supabase Storage
+
+## Variáveis de ambiente
+
+Crie um arquivo `.env` baseado no `.env.example`:
+
+```env
+DATABASE_URL="postgresql://postgres:senha@host.supabase.co:5432/postgres"
+NEXTAUTH_URL="http://localhost:3000"
+NEXTAUTH_SECRET="coloque-um-hash-seguro-aqui"
+NEXT_PUBLIC_SUPABASE_URL="https://xxxx.supabase.co"
+NEXT_PUBLIC_SUPABASE_ANON_KEY="sua-anon-key"
+SUPABASE_SERVICE_ROLE_KEY="sua-service-role-key"
+NEXT_PUBLIC_ROOT_DOMAIN="metodogl.online"
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Rodando localmente
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm install
+npx prisma migrate dev
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Depois acesse `http://localhost:3000/api/seed` para criar o usuário administrador padrão:
 
-## Learn More
+- Email: `admin@metodogl.online`
+- Senha: `admin123`
 
-To learn more about Next.js, take a look at the following resources:
+## Configuração de DNS para subdomínios
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+No painel da LocalWeb (ou gerenciador de DNS do domínio), aponte:
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Tipo | Host | Valor |
+|---|---|---|
+| A | `@` | IP que a Vercel indicar |
+| CNAME | `*` | `cname.vercel-dns.com` |
 
-## Deploy on Vercel
+> Confira os valores exatos na Vercel em **Project → Settings → Domains** ao adicionar `metodogl.online` e `*.metodogl.online`.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Deploy na Vercel
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+1. Crie um repositório no GitHub e envie o código.
+2. Importe o projeto na Vercel.
+3. Configure as variáveis de ambiente.
+4. Adicione os domínios `metodogl.online` e `*.metodogl.online`.
+5. Aplique as migrations no banco de dados.
+
+## Estrutura de subdomínios
+
+- Painel: `metodogl.online/admin`
+- Página do mentorado: `slug.metodogl.online`
+
+## Licença
+
+Uso interno - SM Company.

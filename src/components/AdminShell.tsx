@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { LogoutButton } from "@/components/LogoutButton";
+import { SyncCatalogButton } from "@/components/SyncCatalogButton";
 
 type NavKey = "dashboard" | "mentorados" | "modulos" | "conteudo";
 
@@ -174,7 +175,12 @@ export function AdminShell({ children }: { children: React.ReactNode }) {
 
         {/* Conteúdo */}
         <main className="flex-1 px-4 py-6 sm:px-6 sm:py-8 lg:px-10">
-          <div className="mx-auto max-w-7xl">{children}</div>
+          <div className="mx-auto max-w-7xl">
+            <div className="mb-5 flex justify-end">
+              <SyncCatalogButton />
+            </div>
+            {children}
+          </div>
         </main>
       </div>
     </div>

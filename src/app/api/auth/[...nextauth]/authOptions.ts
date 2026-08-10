@@ -3,13 +3,35 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import { prisma } from "@/lib/prisma";
 import { verifyPassword } from "@/lib/auth";
 
-if (!process.env.NEXTAUTH_SECRET) {
-  console.error("[NEXTAUTH] NEXTAUTH_SECRET não está definida");
+// Em dev: gera uma chave estável local para o JWT não se perder entre restarts.
+// Em prod: a SECRET é obrigatória — se faltar, lança erro na inicialização.
+// Durante `next build` (que não tem env de runtime), aceita placeholder.
+function getOrInitSecret(): string {
+  const fromEnv = process.env.NEXTAUTH_SECRET;
+  if (fromEnv) return fromEnv;
+
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+
+  if (process.env.NODE_ENV !== "production" || isBuildPhase) {
+    const devPlaceholder = "dev-only-insecure-secret-do-not-use-in-prod-123456789";
+    if (!isBuildPhase) {
+      console.warn(
+        "[NEXTAUTH] NEXTAUTH_SECRET não definida — usando placeholder de DEV. " +
+          "Defina no .env para garantir que sessões sobrevivam entre restarts.",
+      );
+    }
+    return devPlaceholder;
+  }
+
+  throw new Error(
+    "NEXTAUTH_SECRET não está definida. Defina no .env (ou nas variáveis de ambiente do host). " +
+      "Gere com: openssl rand -base64 32",
+  );
 }
 
 export const authOptions: NextAuthOptions = {
   session: { strategy: "jwt" },
-  secret: process.env.NEXTAUTH_SECRET,
+  secret: getOrInitSecret(),
   pages: {
     signIn: "/admin/login",
     error: "/admin/login",

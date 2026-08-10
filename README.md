@@ -22,30 +22,54 @@ Sistema multi-tenant para criar páginas de captura individuais para cada mentor
 
 ## Variáveis de ambiente
 
-Crie um arquivo `.env` baseado no `.env.example`:
-
-```env
-DATABASE_URL="postgresql://postgres:senha@host.supabase.co:5432/postgres"
-NEXTAUTH_URL="http://localhost:3000"
-NEXTAUTH_SECRET="coloque-um-hash-seguro-aqui"
-NEXT_PUBLIC_SUPABASE_URL="https://xxxx.supabase.co"
-NEXT_PUBLIC_SUPABASE_ANON_KEY="sua-anon-key"
-SUPABASE_SERVICE_ROLE_KEY="sua-service-role-key"
-NEXT_PUBLIC_ROOT_DOMAIN="metodogl.online"
-```
-
-## Rodando localmente
+Crie um arquivo `.env` baseado no `.env.example` (copie e preencha):
 
 ```bash
-npm install
-npx prisma migrate dev
-npm run dev
+cp .env.example .env
 ```
 
-Depois acesse `http://localhost:3000/api/seed` para criar o usuário administrador padrão:
+Variáveis necessárias (todas têm placeholder no `.env.example`):
 
-- Email: `admin@metodogl.online`
-- Senha: `admin123`
+| Variável | O que é | Onde pegar |
+|---|---|---|
+| `DATABASE_URL` | Postgres pooled (porta 6543, com `?pgbouncer=true`) | Supabase → Settings → Database → "Transaction pooler" |
+| `DIRECT_URL` | Postgres direto (porta 5432) — usado pelas migrations | Supabase → Settings → Database → "Direct connection" |
+| `NEXT_PUBLIC_SUPABASE_URL` | URL do projeto | Supabase → Settings → API |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave pública (anon) | Supabase → Settings → API |
+| `SUPABASE_SERVICE_ROLE_KEY` | Chave admin (NUNCA expor no client) | Supabase → Settings → API |
+| `NEXTAUTH_SECRET` | Assinatura dos JWTs do NextAuth | `openssl rand -base64 32` |
+| `NEXTAUTH_URL` | URL pública do app | `http://localhost:3000` em dev, `https://metodogl.online` em prod |
+| `NEXT_PUBLIC_ROOT_DOMAIN` | Domínio base dos subdomínios | `metodogl.online` |
+
+## Setup do Supabase (passo a passo)
+
+1. **Crie o projeto** em [supabase.com/dashboard](https://supabase.com/dashboard).
+
+2. **Pegue as connection strings**:
+   - Settings → Database → Connection string
+   - Copie a aba **"Transaction pooler"** → `DATABASE_URL` (porta 6543, com `?pgbouncer=true&connection_limit=1`)
+   - Copie a aba **"Direct connection"** → `DIRECT_URL` (porta 5432)
+
+3. **Pegue as chaves de API**:
+   - Settings → API
+   - `Project URL` → `NEXT_PUBLIC_SUPABASE_URL`
+   - `anon / public` → `NEXT_PUBLIC_SUPABASE_ANON_KEY`
+   - `service_role` (secreta!) → `SUPABASE_SERVICE_ROLE_KEY`
+
+4. **Crie o bucket de Storage** para upload de vídeos/thumbnails:
+   - Storage → New bucket
+   - Nome: `videos` (público)
+   - Em "Policies", permita SELECT público + INSERT/UPDATE/DELETE apenas para usuários autenticados (a app usa `service_role` server-side, então você pode deixar policies abertas para `service_role` ou criar policies específicas)
+
+5. **Rode as migrations**:
+   ```bash
+   npx prisma migrate deploy
+   ```
+   Isso cria as tabelas `User`, `Mentorado`, `Video`, `VideoCategory`, `PageContent` no seu banco Supabase.
+
+6. **Crie o usuário admin** acessando `http://localhost:3000/api/seed` uma vez após o deploy:
+   - Email: `admin@metodogl.online`
+   - Senha: `admin123`
 
 ## Configuração de DNS para subdomínios
 

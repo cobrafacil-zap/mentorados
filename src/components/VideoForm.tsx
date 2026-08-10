@@ -9,6 +9,11 @@ import type { Video, VideoCategory } from "@prisma/client";
 interface Props {
   initial?: Video;
   mode: "create" | "edit";
+  /** URL para onde o form volta depois de salvar ou cancelar.
+   *  Default: `/admin/modulos` (a antiga rota `/admin/videos` agora redireciona). */
+  backHref?: string;
+  /** Categoria pré-selecionada quando `mode === "create"`. */
+  defaultCategory?: VideoCategory;
 }
 
 interface UploadState {
@@ -17,14 +22,18 @@ interface UploadState {
   error?: string;
 }
 
-export function VideoForm({ initial, mode }: Props) {
+export function VideoForm({ initial, mode, backHref, defaultCategory }: Props) {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const thumbInputRef = useRef<HTMLInputElement | null>(null);
 
+  const back = backHref ?? "/admin/modulos";
+
   const [title, setTitle] = useState(initial?.title ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
-  const [category, setCategory] = useState<VideoCategory>(initial?.category ?? "COMECE_POR_AQUI");
+  const [category, setCategory] = useState<VideoCategory>(
+    initial?.category ?? defaultCategory ?? "COMECE_POR_AQUI",
+  );
   const [duration, setDuration] = useState(initial?.duration ?? "");
   const [order, setOrder] = useState<number>(initial?.order ?? 0);
   const [published, setPublished] = useState<boolean>(initial?.published ?? true);
@@ -150,7 +159,7 @@ export function VideoForm({ initial, mode }: Props) {
         const data = await res.json().catch(() => ({}));
         throw new Error(data.error ?? "Erro ao salvar vídeo");
       }
-      router.push("/admin/videos");
+      router.push(back);
       router.refresh();
     } catch (e) {
       setError(e instanceof Error ? e.message : "Erro ao salvar");
@@ -163,7 +172,7 @@ export function VideoForm({ initial, mode }: Props) {
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <Link href="/admin/videos" className="text-xs text-zinc-400 hover:text-white">
+          <Link href={back} className="text-xs text-zinc-400 hover:text-white">
             ← Voltar para a lista
           </Link>
           <h2 className="mt-1 text-2xl font-bold">
@@ -177,7 +186,7 @@ export function VideoForm({ initial, mode }: Props) {
         </div>
         <div className="flex gap-2">
           <Link
-            href="/admin/videos"
+            href={back}
             className="rounded-md border border-zinc-800 px-4 py-2 text-sm text-zinc-300 hover:bg-white/5"
           >
             Cancelar

@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { LogoutButton } from "@/components/LogoutButton";
 
-type NavKey = "dashboard" | "mentorados" | "videos" | "modulos" | "conteudo";
+type NavKey = "dashboard" | "mentorados" | "modulos" | "conteudo";
 
 interface NavItem {
   key: NavKey;
@@ -23,17 +23,6 @@ const NAV: NavItem[] = [
     icon: (
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
         <path d="M3 12L12 4l9 8M5 10v10h5v-6h4v6h5V10" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-  },
-  {
-    key: "videos",
-    label: "Vídeos",
-    href: "/admin/videos",
-    icon: (
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <rect x="3" y="6" width="18" height="12" rx="2" stroke="currentColor" strokeWidth="1.8" />
-        <path d="M10 9.5l4 2.5-4 2.5v-5z" fill="currentColor" />
       </svg>
     ),
   },
@@ -76,7 +65,7 @@ const NAV: NavItem[] = [
 /** Acha o item de nav ativo dado o pathname. */
 function activeKey(pathname: string | null): NavKey {
   if (!pathname) return "dashboard";
-  if (pathname.startsWith("/admin/videos")) return "videos";
+  // Ordem: do mais específico pro mais genérico.
   if (pathname.startsWith("/admin/modulos")) return "modulos";
   if (pathname.startsWith("/admin/conteudo")) return "conteudo";
   if (pathname.startsWith("/admin/mentorados")) return "mentorados";

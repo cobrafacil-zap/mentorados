@@ -3,6 +3,7 @@ import type { VideoCategory } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 import { MODULES } from "@/lib/modules";
 import { VIDEO_CATEGORY_LABELS } from "@/lib/videoCategories";
+import { ModulosIndexSeedBanner } from "./_components/ModulosIndexSeedBanner";
 
 export const dynamic = "force-dynamic";
 
@@ -125,6 +126,10 @@ export default async function AdminModulosPage() {
         </div>
       </header>
 
+      {dbAvailable && totalGlobal === 0 && (
+        <ModulosIndexSeedBanner onSeeded={() => { /* server render revalidates automatically */ }} />
+      )}
+
       {!dbAvailable && (
         <div className="flex flex-wrap items-start gap-3 rounded-2xl border border-[#ffb066]/30 bg-[#ffb066]/5 px-4 py-3 text-xs">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true" className="flex-shrink-0 text-[#ffb066]">
@@ -235,7 +240,7 @@ function ModuleCard({ data }: { data: ModuleCardData }) {
                       {videos.map((v) => (
                         <li key={v.id}>
                           <Link
-                            href={`/admin/videos/${v.id}`}
+                            href={`/admin/modulos/${m.slug}/aulas/${v.id}`}
                             className="group/link flex items-center gap-2 rounded-lg border border-transparent px-2 py-1.5 text-xs text-slate-300 transition hover:border-white/10 hover:bg-white/[0.04] hover:text-white"
                           >
                             <span className={`inline-block h-1.5 w-1.5 flex-shrink-0 rounded-full ${v.published ? "bg-[#1fd29c]" : "bg-slate-500"}`} />
@@ -258,7 +263,7 @@ function ModuleCard({ data }: { data: ModuleCardData }) {
         {/* Ações */}
         <div className="flex flex-wrap items-center gap-2 border-t border-white/5 pt-3">
           <Link
-            href={`/admin/videos?module=${m.slug}`}
+            href={`/admin/modulos/${m.slug}`}
             className="inline-flex items-center gap-1.5 rounded-lg border border-[#ff7a18]/35 bg-[#ff7a18]/10 px-3 py-1.5 text-xs font-semibold text-[#ffb066] transition hover:bg-[#ff7a18]/20"
           >
             Gerenciar no editor
@@ -267,7 +272,7 @@ function ModuleCard({ data }: { data: ModuleCardData }) {
             </svg>
           </Link>
           <Link
-            href={`/admin/videos/novo?category=${categoriesWithVideos[0]?.key ?? ""}&module=${m.slug}`}
+            href={`/admin/modulos/${m.slug}/aulas/nova`}
             className="inline-flex items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-300 hover:bg-white/10"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" aria-hidden="true">

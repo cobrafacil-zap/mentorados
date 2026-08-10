@@ -10,7 +10,7 @@ import { CONTENT_LABELS, PAGE_CONTENT_KEYS, type PageContentKey } from "@/lib/pa
 // A página existe para o admin inspecionar rapidamente o que
 // vai aparecer no site público.
 //
-// Edição fica em /admin/videos/... e em código. Conteúdo de LP
+// Edição fica em /admin/modulos/<slug>/aulas/... e em código. Conteúdo de LP
 // só é editável via `npx prisma studio` ou deploy.
 // =========================================================
 

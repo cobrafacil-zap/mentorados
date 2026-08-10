@@ -1,7 +1,7 @@
 import { getServerSession } from "next-auth/next";
 import { redirect } from "next/navigation";
 import { authOptions } from "../../api/auth/[...nextauth]/authOptions";
-import { AdminHeader } from "@/components/AdminHeader";
+import { AdminShell } from "@/components/AdminShell";
 
 export default async function AdminLayout({
   children,
@@ -18,10 +18,5 @@ export default async function AdminLayout({
 
   if (!session) redirect("/admin/login");
 
-  return (
-    <div className="min-h-screen bg-zinc-950 text-white">
-      <AdminHeader />
-      <main className="mx-auto max-w-7xl px-4 py-8">{children}</main>
-    </div>
-  );
+  return <AdminShell>{children}</AdminShell>;
 }

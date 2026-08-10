@@ -15,6 +15,47 @@ interface NumberFieldProps {
   decimals?: number;
   invalid?: boolean;
   invalidMessage?: string;
+  /** Quando true, mostra o prefixo/suffix DENTRO do input só quando
+   *  ele está focado/vazio. Útil para evitar que o cursor fique
+   *  preso no meio do texto com prefixo. */
+  inlinePrefix?: boolean;
+}
+
+const R_PREFIX = /^r?\$?\s*/i;
+
+/**
+ * Normaliza o texto cru digitado/colado para número JS.
+ * Aceita:
+ *   "1500"          → 1500
+ *   "1.500"         → 1500   (ponto como milhar, como pt-BR)
+ *   "1.500,50"      → 1500.5
+ *   "1500,5"        → 1500.5
+ *   "1500.5"        → 1500.5  (ponto como decimal, fallback)
+ *   "R$ 1.500,00"   → 1500
+ *   ""              → 0
+ */
+function parseRaw(raw: string): number {
+  if (raw === "") return 0;
+  // tira prefixo "R$" / "r$" e espaços
+  let s = raw.replace(R_PREFIX, "").replace(/\s+/g, "");
+  // conta pontos e vírgulas
+  const dots = (s.match(/\./g) || []).length;
+  const commas = (s.match(/,/g) || []).length;
+  if (dots > 0 && commas > 0) {
+    // estilo pt-BR: ponto é milhar, vírgula é decimal
+    s = s.replace(/\./g, "").replace(",", ".");
+  } else if (commas > 0) {
+    // só vírgula: decimal
+    s = s.replace(",", ".");
+  }
+  // resto: se houver múltiplos pontos, mantém só o último como decimal
+  const parts = s.split(".");
+  if (parts.length > 2) {
+    const dec = parts.pop();
+    s = parts.join("") + "." + dec;
+  }
+  const n = Number(s);
+  return Number.isFinite(n) ? n : 0;
 }
 
 export function NumberField({
@@ -33,16 +74,20 @@ export function NumberField({
 }: NumberFieldProps) {
   const handle = useCallback(
     (raw: string) => {
-      // Aceita "1.234,56" e "1234.56" — padroniza para número.
-      const cleaned = raw.replace(/\s/g, "").replace(/\./g, "").replace(",", ".");
-      const parsed = Number(cleaned);
-      if (Number.isFinite(parsed)) onChange(parsed);
-      else if (raw === "") onChange(0);
+      // 1) tira prefixo se colar com R$
+      // 2) normaliza para número
+      const parsed = parseRaw(raw);
+      // 3) aplica min/max
+      let clamped = parsed;
+      if (typeof min === "number" && clamped < min) clamped = min;
+      if (typeof max === "number" && clamped > max) clamped = max;
+      onChange(clamped);
     },
-    [onChange]
+    [onChange, min, max]
   );
 
-  const display = value.toLocaleString("pt-BR", {
+  // Máscara: usa pt-BR com o número de decimais do campo.
+  const display = (value || 0).toLocaleString("pt-BR", {
     minimumFractionDigits: decimals,
     maximumFractionDigits: decimals,
   });

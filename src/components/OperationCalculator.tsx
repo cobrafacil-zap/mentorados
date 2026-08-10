@@ -1,34 +1,51 @@
 "use client";
 
+// =========================================================
+// OperationCalculator
+// Modelo: a calculadora assume que todos os pedidos do período
+// vieram desta operação (você divulga o mesmo link no grupo).
+// Vendas em marketplaces como Shopee / Mercado Livre não são
+// rastreáveis por pessoa — então os números derivados (taxa de
+// conversão, CAC, ticket) são REFERÊNCIA, não verdade contábil.
+// O foco da calculadora é o que entra/sai do caixa: Lucro e ROI.
+// =========================================================
+
 import { useMemo, useState } from "react";
 import { NumberField } from "./NumberField";
 import { BRL, INT, PCT, calculateOperation } from "@/lib/calc";
 
 const DEFAULT_INPUTS = {
-  pessoas: 500,
+  pessoasTrafego: 250,   // quantas entraram via tráfego pago
+  pessoasGrupo: 500,     // total de pessoas no grupo agora
   pedidos: 75,
   gasto: 1000,
   receita: 1500,
 };
 
 export function OperationCalculator() {
-  const [pessoas, setPessoas] = useState(DEFAULT_INPUTS.pessoas);
+  const [pessoasTrafego, setPessoasTrafego] = useState(DEFAULT_INPUTS.pessoasTrafego);
+  const [pessoasGrupo, setPessoasGrupo] = useState(DEFAULT_INPUTS.pessoasGrupo);
   const [pedidos, setPedidos] = useState(DEFAULT_INPUTS.pedidos);
   const [gasto, setGasto] = useState(DEFAULT_INPUTS.gasto);
   const [receita, setReceita] = useState(DEFAULT_INPUTS.receita);
 
-  const inputs = { pessoas, pedidos, gasto, receita };
-  const result = useMemo(() => calculateOperation(inputs), [pessoas, pedidos, gasto, receita]);
+  const inputs = { pessoas: pessoasGrupo, pedidos, gasto, receita };
+  const result = useMemo(() => calculateOperation(inputs), [pessoasGrupo, pedidos, gasto, receita]);
 
-  const pedidosInvalid = pedidos > pessoas;
+  const pedidosInvalid = pedidos > pessoasGrupo;
+  const trafegoInvalid = pessoasTrafego > pessoasGrupo;
   const hasError =
-    pessoas <= 0 ||
+    pessoasGrupo <= 0 ||
+    pessoasTrafego < 0 ||
     pedidos < 0 ||
     gasto < 0 ||
     receita < 0 ||
     pedidosInvalid;
 
-  // Cenários rápidos (taxas hipotéticas aplicadas à base atual)
+  // CPL = gasto ÷ pessoas que vieram do tráfego pago (métrica do tráfego)
+  const cplTrafego = pessoasTrafego > 0 ? gasto / pessoasTrafego : 0;
+
+  // Cenários rápidos: variação só da taxa de conversão.
   const taxaAtual = result.taxaConversao;
   const cenarios = useMemo(() => {
     const taxas = [
@@ -37,7 +54,7 @@ export function OperationCalculator() {
       { label: "Otimista", taxa: Math.min(1, taxaAtual * 1.5) },
     ];
     return taxas.map((t) => {
-      const pedidosCenario = Math.round(pessoas * t.taxa);
+      const pedidosCenario = Math.round(pessoasGrupo * t.taxa);
       const receitaCenario = pedidosCenario * (pedidos > 0 ? receita / pedidos : 0);
       const lucro = receitaCenario - gasto;
       const roi = gasto > 0 ? lucro / gasto : 0;
@@ -49,7 +66,7 @@ export function OperationCalculator() {
         roi,
       };
     });
-  }, [pessoas, pedidos, gasto, receita, taxaAtual]);
+  }, [pessoasGrupo, pedidos, gasto, receita, taxaAtual]);
 
   return (
     <div className="space-y-8">
@@ -59,8 +76,11 @@ export function OperationCalculator() {
           Calculadora de <span className="text-gradient-orange">Operação</span>
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
-          Preencha com os dados reais do seu grupo. A calculadora descobre
-          conversão, lucro, ROI e quanto custa, de fato, cada pessoa que comprou.
+          Preencha com os dados reais do seu grupo. A calculadora mostra
+          <span className="text-white"> lucro e ROI</span> (o que importa
+          pro caixa) e, abaixo, métricas de referência como conversão e
+          custo por pessoa — estas são aproximadas, porque o marketplace
+          não diz de onde veio cada venda.
         </p>
       </div>
 
@@ -79,12 +99,25 @@ export function OperationCalculator() {
 
             <div className="space-y-4">
               <NumberField
-                label="Pessoas no grupo"
-                hint="quantidade"
-                value={pessoas}
-                onChange={setPessoas}
+                label="Pessoas do tráfego pago"
+                hint="vindas de anúncio"
+                value={pessoasTrafego}
+                onChange={setPessoasTrafego}
                 decimals={0}
-                invalid={pessoas <= 0}
+                invalid={pessoasTrafego < 0 || trafegoInvalid}
+                invalidMessage={
+                  trafegoInvalid
+                    ? "Não pode ser maior que o total no grupo."
+                    : "Informe uma quantidade maior ou igual a zero."
+                }
+              />
+              <NumberField
+                label="Total no grupo"
+                hint="inclui indicações e orgânico"
+                value={pessoasGrupo}
+                onChange={setPessoasGrupo}
+                decimals={0}
+                invalid={pessoasGrupo <= 0}
                 invalidMessage="Informe uma quantidade maior que zero."
               />
               <NumberField
@@ -124,7 +157,8 @@ export function OperationCalculator() {
 
             <button
               onClick={() => {
-                setPessoas(DEFAULT_INPUTS.pessoas);
+                setPessoasTrafego(DEFAULT_INPUTS.pessoasTrafego);
+                setPessoasGrupo(DEFAULT_INPUTS.pessoasGrupo);
                 setPedidos(DEFAULT_INPUTS.pedidos);
                 setGasto(DEFAULT_INPUTS.gasto);
                 setReceita(DEFAULT_INPUTS.receita);
@@ -137,43 +171,73 @@ export function OperationCalculator() {
         </div>
 
         {/* Resultados */}
-        <div className="lg:col-span-3">
+        <div className="lg:col-span-3 space-y-4">
+          {/* Cards em destaque: Lucro e ROI */}
           <div className="grid gap-3 sm:grid-cols-2">
-            <MetricCard label="Taxa de conversão" value={PCT(result.taxaConversao, 1)} hint="pedidos ÷ pessoas" />
-            <MetricCard label="Ticket médio" value={BRL(result.ticketMedio)} hint="receita ÷ pedidos" />
-            <MetricCard label="Custo por pessoa" value={BRL(result.custoPorPessoa)} hint="gasto ÷ pessoas" />
-            <MetricCard
-              label="CAC efetivo"
-              value={BRL(result.cacEfetivo)}
-              hint="gasto ÷ pedidos"
-              accent="orange-strong"
-              highlight
-            />
-            <MetricCard
+            <HighlightCard
               label="Lucro"
               value={BRL(result.lucro)}
-              hint="receita − gasto"
-              accent={result.lucro >= 0 ? "success" : "danger"}
-              highlight
+              hint={result.lucro >= 0 ? "sobrou no caixa" : "prejuízo no período"}
+              tone={result.lucro >= 0 ? "success" : "danger"}
             />
-            <MetricCard
+            <HighlightCard
               label="ROI"
               value={PCT(result.roi, 1)}
               hint="retorno sobre o gasto"
-              accent={result.roi >= 0 ? "success" : "danger"}
-              highlight
-            />
-            <MetricCard
-              label="Comissão / pessoa"
-              value={BRL(result.comissaoMediaPorPessoa)}
-              hint="receita ÷ pessoas"
-              accent="orange"
-              className="sm:col-span-2"
+              tone={result.roi >= 0 ? "success" : "danger"}
             />
           </div>
 
+          {/* Referência (aproximada) — métricas derivadas */}
+          <div className="rounded-2xl border border-white/10 bg-white/[0.02] p-5">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 rounded-full border border-white/15 bg-white/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-slate-300">
+                Referência (aproximada)
+              </span>
+              <span className="text-[10px] text-slate-500">
+                Mercadoplaces não rastreiam a venda por pessoa
+              </span>
+            </div>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <MetricCard
+                label="Taxa de conversão"
+                value={PCT(result.taxaConversao, 1)}
+                hint="pedidos ÷ total no grupo"
+              />
+              <MetricCard
+                label="Ticket médio"
+                value={BRL(result.ticketMedio)}
+                hint="receita ÷ pedidos"
+              />
+              <MetricCard
+                label="Custo por pessoa (grupo)"
+                value={BRL(result.custoPorPessoa)}
+                hint="gasto ÷ total no grupo"
+              />
+              <MetricCard
+                label="Custo por lead (tráfego)"
+                value={BRL(cplTrafego)}
+                hint="gasto ÷ pessoas do tráfego"
+                accent="orange"
+              />
+              <MetricCard
+                label="CAC efetivo (pedidos)"
+                value={BRL(result.cacEfetivo)}
+                hint="gasto ÷ pedidos"
+                className="sm:col-span-2"
+              />
+              <MetricCard
+                label="Comissão / pessoa"
+                value={BRL(result.comissaoMediaPorPessoa)}
+                hint="receita ÷ total no grupo"
+                accent="orange"
+                className="sm:col-span-2"
+              />
+            </div>
+          </div>
+
           {hasError && (
-            <div className="mt-4 rounded-lg border border-amber-900/50 bg-amber-950/30 p-4 text-sm text-amber-200">
+            <div className="rounded-lg border border-amber-900/50 bg-amber-950/30 p-4 text-sm text-amber-200">
               Ajuste os campos para ver os cálculos completos.
             </div>
           )}
@@ -240,33 +304,38 @@ export function OperationCalculator() {
         </div>
       </div>
 
-      {/* Conceito de Lead Final — equivalente didático */}
+      {/* Conceito-chave — focado no que importa (vendas) */}
       {!hasError && (
         <div className="glass relative overflow-hidden rounded-2xl p-6 sm:p-7">
           <div className="pointer-events-none absolute -right-12 -top-12 h-40 w-40 rounded-full bg-[#ff7a18]/15 blur-2xl" />
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#ff7a18]/30 bg-[#ff7a18]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#ffb066]">
             Conceito-chave
           </div>
-          <h3 className="text-lg font-semibold text-white">Custo real por pedido</h3>
+          <h3 className="text-lg font-semibold text-white">O que importa, no fim, é o caixa</h3>
           <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-slate-300">
-            Trazer uma pessoa para o grupo é só o começo. Se poucas compram, o
-            custo real de cada venda é maior do que parece. Esta é a métrica que
-            mostra se a operação está pagando o esforço.
+            Métricas de conversão, CAC e ticket são úteis pra decidir onde mexer — mas
+            o que fecha a conta é simples: você gastou X e recebeu Y. Lucro e ROI
+            são as únicas que dizem se a operação está pagando o esforço.
           </p>
 
           <div className="mt-5 flex flex-wrap items-center gap-2 text-sm">
-            <Pill label="Pessoas" value={INT(pessoas)} tone="muted" />
+            <Pill label="Gasto" value={BRL(gasto)} tone="muted" />
             <Arrow />
-            <Pill label="Conversão" value={PCT(result.taxaConversao, 1)} tone="muted" />
+            <Pill label="Receita" value={BRL(receita)} tone="muted" />
             <Arrow />
-            <Pill label="CAC efetivo" value={BRL(result.cacEfetivo)} tone="orange" />
+            <Pill
+              label={result.lucro >= 0 ? "Lucro" : "Prejuízo"}
+              value={BRL(result.lucro)}
+              tone={result.lucro >= 0 ? "orange" : "danger"}
+            />
           </div>
 
           <p className="mt-4 text-sm text-slate-400">
-            Você trouxe <span className="font-semibold text-white">{INT(pessoas)}</span>{" "}
-            pessoas e converteu <span className="font-semibold text-white">{PCT(result.taxaConversao, 1)}</span>.
-            O custo real de cada uma que comprou foi{" "}
-            <span className="font-semibold text-[#ffb066]">{BRL(result.cacEfetivo)}</span>.
+            Você gastou <span className="font-semibold text-white">{BRL(gasto)}</span> e recebeu{" "}
+            <span className="font-semibold text-white">{BRL(receita)}</span>. O retorno sobre o gasto foi{" "}
+            <span className={`font-semibold ${result.roi >= 0 ? "text-[#1fd29c]" : "text-[#ff5c7a]"}`}>
+              {PCT(result.roi, 1)}
+            </span>.
           </p>
         </div>
       )}
@@ -317,17 +386,72 @@ function MetricCard({
   );
 }
 
-function Pill({ label, value, tone }: { label: string; value: string; tone: "muted" | "orange" }) {
+function HighlightCard({
+  label,
+  value,
+  hint,
+  tone,
+}: {
+  label: string;
+  value: string;
+  hint: string;
+  tone: "success" | "danger";
+}) {
+  const isGood = tone === "success";
+  return (
+    <div
+      className={`relative overflow-hidden rounded-2xl border p-6 ${
+        isGood
+          ? "border-[#1fd29c]/40 bg-[#1fd29c]/[0.08]"
+          : "border-[#ff5c7a]/40 bg-[#ff5c7a]/[0.08]"
+      }`}
+    >
+      <div
+        className={`pointer-events-none absolute -right-10 -top-10 h-32 w-32 rounded-full blur-3xl ${
+          isGood ? "bg-[#1fd29c]/25" : "bg-[#ff5c7a]/25"
+        }`}
+      />
+      <div className="relative">
+        <div className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-slate-200">
+          {isGood ? (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M5 13l4 4L19 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          ) : (
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M6 6l12 12M18 6L6 18" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+            </svg>
+          )}
+          {label}
+        </div>
+        <div className={`mt-2 text-4xl font-bold tabular-nums ${accentText[tone]}`}>{value}</div>
+        <div className="mt-1 text-xs text-slate-400">{hint}</div>
+      </div>
+    </div>
+  );
+}
+
+function Pill({ label, value, tone }: { label: string; value: string; tone: "muted" | "orange" | "danger" }) {
   return (
     <div
       className={`flex items-center gap-2 rounded-xl border px-4 py-2 ${
         tone === "orange"
           ? "border-[#ff7a18]/40 bg-[#ff7a18]/10"
+          : tone === "danger"
+          ? "border-[#ff5c7a]/40 bg-[#ff5c7a]/10"
           : "border-white/10 bg-white/[0.02]"
       }`}
     >
       <span className="text-[10px] uppercase tracking-wider text-slate-400">{label}</span>
-      <span className={`text-sm font-bold ${tone === "orange" ? "text-[#ffb066]" : "text-white"}`}>
+      <span
+        className={`text-sm font-bold tabular-nums ${
+          tone === "orange"
+            ? "text-[#ffb066]"
+            : tone === "danger"
+            ? "text-[#ff5c7a]"
+            : "text-white"
+        }`}
+      >
         {value}
       </span>
     </div>

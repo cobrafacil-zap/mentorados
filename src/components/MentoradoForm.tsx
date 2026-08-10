@@ -2,7 +2,32 @@
 
 import { FormEvent, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { Mentorado } from "@prisma/client";
+
+// Shape local (espelha `model Mentorado` em prisma/schema.prisma).
+// Importar de `@prisma/client` trazia o PrismaClient inteiro pro bundle
+// do client; `import type` não é confiável pra tree-shake em todos os bundlers.
+type Mentorado = {
+  id: string;
+  slug: string;
+  nome: string;
+  ativo: boolean;
+  tituloHero: string;
+  tituloSecao: string;
+  texto1: string;
+  texto2: string;
+  texto3: string;
+  imagemUrl: string | null;
+  linkCta: string;
+  corTopo: string;
+  corFundo: string;
+  corBotao: string;
+  corBotaoHover: string;
+  corTexto: string;
+  corTextoSecundario: string;
+  pixelId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
 
 const defaultValues = {
   slug: "",

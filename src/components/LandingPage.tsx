@@ -1,10 +1,37 @@
 "use client";
 
-import { Mentorado } from "@prisma/client";
 import { MetaPixel, MetaPixelNoScript } from "./MetaPixel";
 
+// Shape local (espelha `model Mentorado` em prisma/schema.prisma).
+// Motivo: importar `Mentorado` de "@prisma/client" faz o bundler
+// trazer o PrismaClient inteiro pro client; mesmo `import type`
+// não é confiável. Campos marcados `?` porque o server pode
+// enviar `null` em alguns opcionais.
+interface MentoradoData {
+  id: string;
+  slug: string;
+  nome: string;
+  ativo: boolean;
+  tituloHero: string;
+  tituloSecao: string;
+  texto1: string;
+  texto2: string;
+  texto3: string;
+  imagemUrl: string | null;
+  linkCta: string;
+  corTopo: string;
+  corFundo: string;
+  corBotao: string;
+  corBotaoHover: string;
+  corTexto: string;
+  corTextoSecundario: string;
+  pixelId: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
 interface LandingPageProps {
-  mentorado: Mentorado;
+  mentorado: MentoradoData;
 }
 
 export function LandingPage({ mentorado }: LandingPageProps) {

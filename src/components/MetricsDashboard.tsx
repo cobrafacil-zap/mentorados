@@ -80,7 +80,6 @@ const METRICS = [
 export function MetricsDashboard() {
   return (
     <Section
-      id="metricas"
       eyebrow="Métricas"
       title={<>As métricas que você precisa <span className="text-gradient-orange">acompanhar</span></>}
       subtitle="Toda operação de grupos lucrativos gira em torno de alguns números fundamentais. Aprenda o que cada um significa e como eles se conectam."

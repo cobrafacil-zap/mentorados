@@ -76,7 +76,6 @@ const STEPS = [
 export function MethodExplainer() {
   return (
     <Section
-      id="metodo"
       eyebrow="O Método"
       title={<>O que é o <span className="text-gradient-orange">Método GL</span>?</>}
       subtitle="Uma metodologia criada para estruturar operações de grupos de ofertas — da aquisição de pessoas via tráfego pago até a retenção, divulgação e análise financeira da operação."

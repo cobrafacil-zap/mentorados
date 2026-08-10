@@ -39,6 +39,53 @@ export function calculate(inputs: CalculatorInputs): CalculatorOutputs {
   };
 }
 
+// =========================================================
+// Modelo "operação real" — dados que o usuário de fato tem.
+// =========================================================
+
+export interface OperationInputs {
+  pessoas: number;       // Quantas pessoas estão no grupo
+  compradores: number;   // Quantas compraram via link
+  gasto: number;         // R$ gasto (tráfego, criativos, ferramentas)
+  receita: number;       // R$ recebido em comissão
+}
+
+export interface OperationOutputs {
+  taxaConversao: number;            // compradores / pessoas  (0..1)
+  ticketMedio: number;              // receita / compradores
+  custoPorPessoa: number;           // gasto / pessoas
+  cacEfetivo: number;               // gasto / compradores
+  lucro: number;                    // receita - gasto
+  roi: number;                      // lucro / gasto  (0..1)
+  comissaoMediaPorPessoa: number;   // receita / pessoas
+}
+
+export function calculateOperation(inputs: OperationInputs): OperationOutputs {
+  const { pessoas, compradores, gasto, receita } = inputs;
+  const safePessoas = Math.max(0, pessoas);
+  const safeCompradores = Math.max(0, Math.min(compradores, safePessoas));
+  const safeGasto = Math.max(0, gasto);
+  const safeReceita = Math.max(0, receita);
+
+  const taxaConversao = safePessoas > 0 ? safeCompradores / safePessoas : 0;
+  const ticketMedio = safeCompradores > 0 ? safeReceita / safeCompradores : 0;
+  const custoPorPessoa = safePessoas > 0 ? safeGasto / safePessoas : 0;
+  const cacEfetivo = safeCompradores > 0 ? safeGasto / safeCompradores : 0;
+  const lucro = safeReceita - safeGasto;
+  const roi = safeGasto > 0 ? lucro / safeGasto : 0;
+  const comissaoMediaPorPessoa = safePessoas > 0 ? safeReceita / safePessoas : 0;
+
+  return {
+    taxaConversao,
+    ticketMedio,
+    custoPorPessoa,
+    cacEfetivo,
+    lucro,
+    roi,
+    comissaoMediaPorPessoa,
+  };
+}
+
 export const BRL = (n: number, decimals = 2) =>
   n.toLocaleString("pt-BR", {
     style: "currency",

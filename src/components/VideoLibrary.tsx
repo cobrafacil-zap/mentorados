@@ -1,13 +1,103 @@
 "use client";
 
-import { useMemo, useState, useEffect, useCallback } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { CATEGORIES, VIDEOS, type VideoItem, type VideoCategory } from "@/data/videos";
-import { Section } from "./Section";
 import { Reveal } from "./Reveal";
 
 type CategoryKey = VideoCategory | "Todos";
 
-export function VideoLibrary() {
+const FEATURED_VIDEO = VIDEOS.find((v) => v.featured) ?? VIDEOS[0];
+
+// =========================================================
+// Card "Comece por aqui" — usado na home.
+// =========================================================
+export function FeaturedVideo() {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    document.body.style.overflow = open ? "hidden" : "";
+    return () => { document.body.style.overflow = ""; };
+  }, [open]);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(false);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open]);
+
+  return (
+    <section id="comece-por-aqui" className="relative scroll-mt-24 py-16 sm:py-20">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <Reveal>
+          <div className="glass overflow-hidden rounded-3xl">
+            <div className="grid items-stretch lg:grid-cols-2">
+              <button
+                onClick={() => setOpen(true)}
+                className="group relative aspect-video overflow-hidden text-left lg:aspect-auto"
+                aria-label={`Assistir: ${FEATURED_VIDEO.title}`}
+              >
+                <img
+                  src={FEATURED_VIDEO.thumbnail}
+                  alt=""
+                  className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-[#050a1a] via-[#050a1a]/30 to-transparent lg:bg-gradient-to-r" />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#ff7a18]/95 text-white shadow-[0_8px_40px_rgba(255,122,24,0.6)] transition group-hover:scale-110">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </div>
+                </div>
+                <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-[#ff7a18] px-3 py-1 text-xs font-semibold text-black">
+                  <span className="h-1.5 w-1.5 rounded-full bg-black animate-pulse-dot" />
+                  Comece por aqui
+                </div>
+                <div className="absolute bottom-4 right-4 rounded-md bg-black/70 px-2 py-1 text-xs text-white">
+                  {FEATURED_VIDEO.duration}
+                </div>
+              </button>
+
+              <div className="flex flex-col justify-center p-8 sm:p-10">
+                <div className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-[#ff7a18]/30 bg-[#ff7a18]/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#ffb066]">
+                  Vídeo introdutório
+                </div>
+                <h2 className="text-2xl font-bold text-white sm:text-3xl">
+                  {FEATURED_VIDEO.title}
+                </h2>
+                <p className="mt-3 text-sm leading-relaxed text-slate-300">
+                  {FEATURED_VIDEO.description}
+                </p>
+                <div className="mt-6 flex flex-wrap gap-3">
+                  <button onClick={() => setOpen(true)} className="btn-primary">
+                    Assistir agora
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <path d="M8 5v14l11-7z" />
+                    </svg>
+                  </button>
+                  <a
+                    href="/aulas"
+                    className="btn-ghost"
+                  >
+                    Ver todas as aulas
+                  </a>
+                </div>
+              </div>
+            </div>
+          </div>
+        </Reveal>
+      </div>
+
+      <VideoModal video={open ? FEATURED_VIDEO : null} onClose={() => setOpen(false)} />
+    </section>
+  );
+}
+
+// =========================================================
+// Biblioteca completa — usada na página /aulas.
+// =========================================================
+export function VideoLibraryFull() {
   const [active, setActive] = useState<CategoryKey>("Todos");
   const [open, setOpen] = useState<VideoItem | null>(null);
 
@@ -16,15 +106,11 @@ export function VideoLibrary() {
     [active]
   );
 
-  // Trava scroll do body quando modal está aberto
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
-    return () => {
-      document.body.style.overflow = "";
-    };
+    return () => { document.body.style.overflow = ""; };
   }, [open]);
 
-  // Fecha com ESC
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && setOpen(null);
@@ -32,17 +118,12 @@ export function VideoLibrary() {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
-  const featured = VIDEOS.find((v) => v.featured) ?? VIDEOS[0];
+  const featured = FEATURED_VIDEO;
 
   return (
-    <Section
-      id="aulas"
-      eyebrow="Conteúdo gratuito"
-      title={<>Aprenda com o <span className="text-gradient-orange">Método GL</span></>}
-      subtitle="Conteúdos gratuitos para você começar a estruturar sua operação. Assista diretamente na plataforma, sem login e sem cadastro."
-    >
+    <>
       {/* Destaque "Comece por aqui" */}
-      <div id="comece-por-aqui" className="mb-12 scroll-mt-24">
+      <div className="mb-12">
         <Reveal>
           <div className="grid items-stretch gap-6 lg:grid-cols-5">
             <button
@@ -76,16 +157,9 @@ export function VideoLibrary() {
               <div className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-[#ff7a18]/30 bg-[#ff7a18]/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#ffb066]">
                 Vídeo introdutório
               </div>
-              <h3 className="text-2xl font-bold text-white sm:text-3xl">
-                {featured.title}
-              </h3>
-              <p className="mt-3 text-sm leading-relaxed text-slate-300">
-                {featured.description}
-              </p>
-              <button
-                onClick={() => setOpen(featured)}
-                className="btn-primary mt-6 w-fit"
-              >
+              <h3 className="text-2xl font-bold text-white sm:text-3xl">{featured.title}</h3>
+              <p className="mt-3 text-sm leading-relaxed text-slate-300">{featured.description}</p>
+              <button onClick={() => setOpen(featured)} className="btn-primary mt-6 w-fit">
                 Assistir agora
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                   <path d="M8 5v14l11-7z" />
@@ -132,8 +206,14 @@ export function VideoLibrary() {
       )}
 
       <VideoModal video={open} onClose={() => setOpen(null)} />
-    </Section>
+    </>
   );
+}
+
+// Compatibilidade retroativa: alguns imports antigos podem ainda apontar para
+// VideoLibrary. Mantemos um alias que aponta para a versão completa.
+export function VideoLibrary(props: { children?: never }) {
+  return <VideoLibraryFull />;
 }
 
 function VideoCard({ video, onPlay }: { video: VideoItem; onPlay: () => void }) {
@@ -209,9 +289,7 @@ function VideoModal({
             <div className="text-[10px] uppercase tracking-wider text-[#ffb066]">
               {video.category} · {video.duration}
             </div>
-            <h3 className="truncate text-sm font-semibold text-white sm:text-base">
-              {video.title}
-            </h3>
+            <h3 className="truncate text-sm font-semibold text-white sm:text-base">{video.title}</h3>
           </div>
           <button
             onClick={onClose}

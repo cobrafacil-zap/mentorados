@@ -13,7 +13,6 @@ const STEPS = [
 export function HowItWorks() {
   return (
     <Section
-      id="como-funciona"
       eyebrow="Como funciona"
       title="Da atração ao resultado, em um fluxo claro"
       subtitle="Seis etapas que sustentam qualquer operação de grupos lucrativos — independentemente do nicho, do tamanho ou do orçamento."

@@ -2,19 +2,19 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
 
 const NAV_ITEMS = [
-  { label: "Método GL", href: "#metodo" },
-  { label: "Aulas", href: "#aulas" },
-  { label: "Ferramentas", href: "#ferramentas" },
-  { label: "Métricas", href: "#metricas" },
-  { label: "Comece por aqui", href: "#comece-por-aqui" },
+  { label: "Método GL", href: "/metodo" },
+  { label: "Aulas", href: "/aulas" },
+  { label: "Ferramentas", href: "/ferramentas" },
 ];
 
 export function Navbar() {
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
+  const pathname = usePathname();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 16);
@@ -31,6 +31,14 @@ export function Navbar() {
     };
   }, [open]);
 
+  // fecha o menu mobile ao trocar de rota
+  useEffect(() => {
+    setOpen(false);
+  }, [pathname]);
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname === href || pathname.startsWith(href + "/");
+
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-all duration-300 ${
@@ -40,24 +48,32 @@ export function Navbar() {
       }`}
     >
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
-        <Link href="#top" className="flex items-center" aria-label="Método GL">
+        <Link href="/" className="flex items-center" aria-label="Método GL">
           <Logo />
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Menu principal">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              className="rounded-md px-3 py-2 text-sm font-medium text-slate-300 transition hover:bg-white/5 hover:text-white"
-            >
-              {item.label}
-            </Link>
-          ))}
+          {NAV_ITEMS.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`rounded-md px-3 py-2 text-sm font-medium transition ${
+                  active
+                    ? "bg-white/10 text-white"
+                    : "text-slate-300 hover:bg-white/5 hover:text-white"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
         </nav>
 
         <div className="hidden lg:block">
-          <Link href="#calculadora" className="btn-primary text-sm">
+          <Link href="/aulas" className="btn-primary text-sm">
             COMEÇAR AGORA
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
@@ -100,21 +116,24 @@ export function Navbar() {
         }`}
       >
         <nav className="flex flex-col gap-1 px-4 py-4" aria-label="Menu mobile">
-          {NAV_ITEMS.map((item) => (
-            <Link
-              key={item.href}
-              href={item.href}
-              onClick={() => setOpen(false)}
-              className="rounded-md px-3 py-3 text-sm font-medium text-slate-200 transition hover:bg-white/5"
-            >
-              {item.label}
-            </Link>
-          ))}
-          <Link
-            href="#calculadora"
-            onClick={() => setOpen(false)}
-            className="btn-primary mt-2 text-sm"
-          >
+          {NAV_ITEMS.map((item) => {
+            const active = isActive(item.href);
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                aria-current={active ? "page" : undefined}
+                className={`rounded-md px-3 py-3 text-sm font-medium transition ${
+                  active
+                    ? "bg-white/10 text-white"
+                    : "text-slate-200 hover:bg-white/5"
+                }`}
+              >
+                {item.label}
+              </Link>
+            );
+          })}
+          <Link href="/aulas" className="btn-primary mt-2 text-sm">
             COMEÇAR AGORA
           </Link>
         </nav>

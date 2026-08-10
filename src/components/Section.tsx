@@ -22,12 +22,12 @@ export function Section({
   return (
     <section
       id={id}
-      className={`relative scroll-mt-24 py-20 sm:py-24 ${className}`}
+      className={`relative scroll-mt-24 py-24 sm:py-32 ${className}`}
     >
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {(eyebrow || title || subtitle) && (
           <div
-            className={`mb-12 max-w-3xl ${
+            className={`mb-16 max-w-3xl ${
               align === "center" ? "mx-auto text-center" : ""
             }`}
           >

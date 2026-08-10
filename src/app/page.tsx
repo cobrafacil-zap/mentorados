@@ -1,20 +1,29 @@
-import Link from "next/link";
+import { Navbar } from "@/components/Navbar";
+import { Footer } from "@/components/Footer";
+import { Hero } from "@/components/Hero";
+import { MethodExplainer } from "@/components/MethodExplainer";
+import { HowItWorks } from "@/components/HowItWorks";
+import { VideoLibrary } from "@/components/VideoLibrary";
+import { MetricsDashboard } from "@/components/MetricsDashboard";
+import { ToolsGrid } from "@/components/ToolsGrid";
+import { EvasionCalculator } from "@/components/EvasionCalculator";
+import { CallToAction } from "@/components/CallToAction";
 
 export default function Home() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center bg-black text-white px-4 text-center">
-      <div className="max-w-xl space-y-6">
-        <h1 className="text-4xl font-bold">Painel de Mentorados</h1>
-        <p className="text-lg text-gray-300">
-          Gerencie seus mentorados e suas páginas de captura individuais.
-        </p>
-        <Link
-          href="/admin"
-          className="inline-block rounded-full bg-red-600 px-8 py-3 text-lg font-medium transition hover:bg-red-700"
-        >
-          Acessar painel administrativo
-        </Link>
-      </div>
-    </div>
+    <>
+      <Navbar />
+      <main>
+        <Hero />
+        <MethodExplainer />
+        <HowItWorks />
+        <VideoLibrary />
+        <ToolsGrid />
+        <EvasionCalculator />
+        <MetricsDashboard />
+        <CallToAction />
+      </main>
+      <Footer />
+    </>
   );
 }

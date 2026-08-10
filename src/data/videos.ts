@@ -23,6 +23,10 @@ export interface VideoItem {
   videoUrl: string; // URL do vídeo (YouTube embed, Vimeo, etc.)
   thumbnail: string; // Imagem de capa
   featured?: boolean;
+  // "Em aguardo" — continua aparecendo na listagem com badge "Em breve",
+  // mas o player fica bloqueado (mostra mensagem "Em breve" no lugar).
+  // Útil para sinalizar conteúdo futuro sem escondê-lo do aluno.
+  emAguardo?: boolean;
 }
 
 export const CATEGORIES: { key: VideoCategory | "Todos"; label: string }[] = [

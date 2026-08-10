@@ -372,19 +372,36 @@ export function VideoModal({
         </div>
 
         <div className="aspect-video w-full bg-black">
-          <iframe
-            src={video.videoUrl}
-            title={video.title}
-            className="h-full w-full"
-            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-            allowFullScreen
-          />
+          {video.emAguardo ? (
+            <div className="flex h-full w-full flex-col items-center justify-center gap-3 bg-gradient-to-br from-[#0a1230] via-[#050a1a] to-[#050a1a] px-6 text-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#ff7a18]/40 bg-[#ff7a18]/10 text-[#ffb066]">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+                  <path d="M12 8v4l3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                </svg>
+              </div>
+              <div className="space-y-1">
+                <p className="text-base font-semibold text-white">Esta aula ainda não está disponível</p>
+                <p className="mx-auto max-w-md text-xs leading-relaxed text-slate-400">
+                  Estamos finalizando este conteúdo. Ele já aparece na trilha para você saber que está a caminho.
+                </p>
+              </div>
+            </div>
+          ) : (
+            <iframe
+              src={video.videoUrl}
+              title={video.title}
+              className="h-full w-full"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            />
+          )}
         </div>
 
         <div className="flex-1 overflow-y-auto px-4 py-4 sm:px-6">
           <p className="text-sm leading-relaxed text-slate-300">{video.description}</p>
 
-          {isTrackMode && (
+          {isTrackMode && !video.emAguardo && (
             <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/5 pt-5">
               <div className="flex flex-wrap items-center gap-2">
                 <button

@@ -38,6 +38,7 @@ export function VideoForm({ initial, mode, backHref, defaultCategory }: Props) {
   const [order, setOrder] = useState<number>(initial?.order ?? 0);
   const [published, setPublished] = useState<boolean>(initial?.published ?? true);
   const [featured, setFeatured] = useState<boolean>(initial?.featured ?? false);
+  const [emAguardo, setEmAguardo] = useState<boolean>(initial?.emAguardo ?? false);
   const [videoUrl, setVideoUrl] = useState<string>(initial?.videoUrl ?? "");
   const [thumbnail, setThumbnail] = useState<string>(initial?.thumbnail ?? "");
 
@@ -145,6 +146,7 @@ export function VideoForm({ initial, mode, backHref, defaultCategory }: Props) {
         order: Number(order) || 0,
         published,
         featured,
+        emAguardo,
       };
 
       const url = mode === "create" ? "/api/admin/videos" : `/api/admin/videos/${initial!.id}`;
@@ -287,6 +289,12 @@ export function VideoForm({ initial, mode, backHref, defaultCategory }: Props) {
                 description="Vídeos publicados aparecem na plataforma."
                 checked={published}
                 onChange={setPublished}
+              />
+              <Switch
+                label="Em aguardo"
+                description="Visível na listagem com badge 'Em breve', mas o player fica bloqueado. Use para sinalizar aulas que ainda não estão prontas."
+                checked={emAguardo}
+                onChange={setEmAguardo}
               />
               <Switch
                 label="Vídeo em destaque"

@@ -64,6 +64,7 @@ export async function POST(request: NextRequest) {
         order: Number.isFinite(body.order) ? Number(body.order) : 0,
         published: body.published ?? true,
         featured: body.featured ?? false,
+        emAguardo: body.emAguardo ?? false,
       },
     });
 

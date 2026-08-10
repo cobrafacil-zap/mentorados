@@ -32,6 +32,7 @@ export async function PATCH(
     if (Number.isFinite(body.order)) data.order = Number(body.order);
     if (typeof body.published === "boolean") data.published = body.published;
     if (typeof body.featured === "boolean") data.featured = body.featured;
+    if (typeof body.emAguardo === "boolean") data.emAguardo = body.emAguardo;
 
     const video = await prisma.video.update({ where: { id }, data });
     return NextResponse.json(video);

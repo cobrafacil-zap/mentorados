@@ -1,7 +1,7 @@
 // =========================================================
 // Loading skeleton para /admin/modulos — exibido enquanto o
-// server roda o `prisma.video.groupBy` (2 queries). Espelha
-// o cabeçalho + grid de 4 cards de stats para evitar shift.
+// server roda prisma.video.groupBy + findMany. Espelha o
+// cabeçalho + grid de 4 cards com lista interna para evitar shift.
 // =========================================================
 
 import { SkeletonBlock, SkeletonChip, SkeletonLine } from "@/components/Skeleton";
@@ -23,6 +23,7 @@ export default function AdminModulosLoading() {
             <SkeletonLine className="h-3" width="min(520px, 75%)" />
           </div>
         </div>
+        <SkeletonChip width="w-32" />
       </header>
 
       {/* Grid de 4 cards */}
@@ -68,9 +69,13 @@ export default function AdminModulosLoading() {
                 ))}
               </div>
 
-              {/* CTA botão */}
-              <div className="pt-1">
-                <SkeletonBlock height="h-8" className="w-28" />
+              {/* Skeleton da área de detalhes (vai sumir quando real chegar) */}
+              <SkeletonBlock height="h-12" />
+
+              {/* Botões */}
+              <div className="flex items-center gap-2 pt-1">
+                <SkeletonBlock height="h-8" className="w-40" />
+                <SkeletonBlock height="h-8" className="w-24" />
               </div>
             </div>
           </article>

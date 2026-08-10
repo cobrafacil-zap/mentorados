@@ -1,16 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../auth/[...nextauth]/authOptions";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/adminAuth";
 import { VideoCategory } from "@prisma/client";
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return { ok: false as const, response: NextResponse.json({ error: "Não autorizado" }, { status: 401 }) };
-  }
-  return { ok: true as const };
-}
 
 function isCategory(value: unknown): value is VideoCategory {
   return typeof value === "string" && value in
@@ -27,8 +18,18 @@ export async function GET() {
     });
     return NextResponse.json(videos);
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro ao listar vídeos";
     console.error("[ADMIN VIDEOS] GET error:", error);
-    return NextResponse.json({ error: "Erro ao listar vídeos" }, { status: 500 });
+    return NextResponse.json(
+      {
+        error: "Erro ao listar vídeos",
+        detail: message,
+        hint: message.toLowerCase().includes("does not exist") || message.toLowerCase().includes("relation")
+          ? "A tabela 'Video' não existe. Rode `npx prisma migrate dev` (local) ou aplique a migration em produção."
+          : undefined,
+      },
+      { status: 500 },
+    );
   }
 }
 
@@ -68,7 +69,11 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(video, { status: 201 });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro ao criar vídeo";
     console.error("[ADMIN VIDEOS] POST error:", error);
-    return NextResponse.json({ error: "Erro ao criar vídeo" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao criar vídeo", detail: message },
+      { status: 500 },
+    );
   }
 }

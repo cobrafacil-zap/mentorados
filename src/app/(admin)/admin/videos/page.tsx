@@ -29,6 +29,8 @@ export default function AdminVideosPage() {
   const [videos, setVideos] = useState<Video[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [errorDetail, setErrorDetail] = useState<string | null>(null);
+  const [errorHint, setErrorHint] = useState<string | null>(null);
   const [query, setQuery] = useState("");
   // Quando vem com `?module=`, fixa a primeira categoria do módulo como pré-seleção.
   const [category, setCategory] = useState<string>(() => {
@@ -48,9 +50,18 @@ export default function AdminVideosPage() {
   const fetchVideos = useCallback(async () => {
     setLoading(true);
     setError(null);
+    setErrorDetail(null);
+    setErrorHint(null);
     try {
       const res = await fetch("/api/admin/videos", { cache: "no-store" });
-      if (!res.ok) throw new Error("Falha ao carregar vídeos");
+      if (!res.ok) {
+        // Tenta extrair `detail` e `hint` do JSON de erro.
+        const body = await res.json().catch(() => ({} as { error?: string; detail?: string; hint?: string }));
+        setError(body.error ?? `Falha ao carregar vídeos (HTTP ${res.status})`);
+        setErrorDetail(body.detail ?? null);
+        setErrorHint(body.hint ?? null);
+        return;
+      }
       const data: Video[] = await res.json();
       setVideos(data);
       setSelected(new Set());
@@ -416,8 +427,31 @@ export default function AdminVideosPage() {
       {loading ? (
         <SkeletonList />
       ) : error ? (
-        <div className="rounded-2xl border border-[#ff5c7a]/40 bg-[#ff5c7a]/10 p-6 text-[#ffb0bf]">
-          {error}
+        <div className="space-y-2 rounded-2xl border border-[#ff5c7a]/40 bg-[#ff5c7a]/10 p-5 text-[#ffb0bf]">
+          <div className="flex items-center gap-2 text-sm font-semibold">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+              <path d="M12 8v5M12 16v.5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+            </svg>
+            {error}
+          </div>
+          {errorDetail && (
+            <pre className="overflow-x-auto rounded-lg border border-[#ff5c7a]/20 bg-black/30 p-3 text-[11px] leading-relaxed text-[#ffb0bf]/80">
+{errorDetail}
+            </pre>
+          )}
+          {errorHint && (
+            <div className="text-xs text-slate-200">
+              <strong className="text-[#ffb066]">Dica:</strong> {errorHint}
+            </div>
+          )}
+          <button
+            type="button"
+            onClick={fetchVideos}
+            className="rounded-lg border border-[#ff5c7a]/30 bg-[#ff5c7a]/10 px-3 py-1.5 text-xs font-medium text-[#ffb0bf] hover:bg-[#ff5c7a]/20"
+          >
+            Tentar de novo
+          </button>
         </div>
       ) : sorted.length === 0 ? (
         <EmptyState

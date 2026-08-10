@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../../auth/[...nextauth]/authOptions";
 import { prisma } from "@/lib/prisma";
+import { requireAdmin } from "@/lib/adminAuth";
 import { VIDEOS } from "@/data/videos";
 import { videoCategoryLabel } from "@/lib/videoCategories";
 import { VideoCategory } from "@prisma/client";
@@ -19,10 +18,8 @@ const LABEL_TO_KEY: Record<string, VideoCategory> = {
 };
 
 export async function POST() {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  }
+  const auth = await requireAdmin();
+  if (!auth.ok) return auth.response;
 
   try {
     const existing = await prisma.video.count();

@@ -1,17 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getServerSession } from "next-auth/next";
-import { authOptions } from "../../../auth/[...nextauth]/authOptions";
 import { prisma } from "@/lib/prisma";
 import { deleteVideo } from "@/lib/upload";
+import { requireAdmin } from "@/lib/adminAuth";
 import { VideoCategory } from "@prisma/client";
-
-async function requireAdmin() {
-  const session = await getServerSession(authOptions);
-  if (!session) {
-    return { ok: false as const, response: NextResponse.json({ error: "Não autorizado" }, { status: 401 }) };
-  }
-  return { ok: true as const };
-}
 
 function isCategory(value: unknown): value is VideoCategory {
   return typeof value === "string" && value in
@@ -45,8 +36,12 @@ export async function PATCH(
     const video = await prisma.video.update({ where: { id }, data });
     return NextResponse.json(video);
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro ao atualizar vídeo";
     console.error("[ADMIN VIDEOS] PATCH error:", error);
-    return NextResponse.json({ error: "Erro ao atualizar vídeo" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao atualizar vídeo", detail: message },
+      { status: 500 },
+    );
   }
 }
 
@@ -72,7 +67,11 @@ export async function DELETE(
     await prisma.video.delete({ where: { id } });
     return NextResponse.json({ ok: true });
   } catch (error) {
+    const message = error instanceof Error ? error.message : "Erro ao excluir vídeo";
     console.error("[ADMIN VIDEOS] DELETE error:", error);
-    return NextResponse.json({ error: "Erro ao excluir vídeo" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Erro ao excluir vídeo", detail: message },
+      { status: 500 },
+    );
   }
 }

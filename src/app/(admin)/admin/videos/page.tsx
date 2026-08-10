@@ -504,7 +504,10 @@ export default function AdminVideosPage() {
                       </td>
                       <td className="px-4 py-3">
                         <div className="flex items-center gap-3">
-                          <div className="relative h-12 w-20 flex-shrink-0 overflow-hidden rounded-md border border-white/10 bg-black">
+                          <Link
+                            href={`/admin/videos/${v.id}`}
+                            className="relative h-12 w-20 flex-shrink-0 overflow-hidden rounded-md border border-white/10 bg-black transition hover:border-[#ff7a18]/50"
+                          >
                             {v.thumbnail ? (
                               /* eslint-disable-next-line @next/next/no-img-element */
                               <img src={v.thumbnail} alt="" className="h-full w-full object-cover" />
@@ -520,11 +523,14 @@ export default function AdminVideosPage() {
                                 DESTAQUE
                               </span>
                             )}
-                          </div>
-                          <div className="min-w-0">
-                            <div className="truncate font-medium text-white">{v.title}</div>
+                          </Link>
+                          <Link
+                            href={`/admin/videos/${v.id}`}
+                            className="min-w-0 flex-1 group/title"
+                          >
+                            <div className="truncate font-medium text-white group-hover/title:text-[#ffb066]">{v.title}</div>
                             <div className="line-clamp-1 text-xs text-slate-500">{v.description}</div>
-                          </div>
+                          </Link>
                         </div>
                       </td>
                       <td className="px-4 py-3">
@@ -550,21 +556,24 @@ export default function AdminVideosPage() {
                         <div className="inline-flex items-center gap-1.5">
                           <Link
                             href={`/admin/videos/${v.id}`}
-                            className="rounded-md border border-white/10 px-2.5 py-1 text-xs text-slate-200 hover:bg-white/5 hover:text-white"
+                            className="inline-flex items-center gap-1 rounded-md border border-[#ff7a18]/35 bg-[#ff7a18]/10 px-2.5 py-1 text-xs font-semibold text-[#ffb066] transition hover:bg-[#ff7a18]/20"
                           >
+                            <svg width="11" height="11" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                              <path d="M11 4H4v16h16v-7M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                            </svg>
                             Editar
                           </Link>
                           <button
                             onClick={() => togglePublished(v)}
                             disabled={busyId === v.id}
-                            className="rounded-md border border-white/10 px-2.5 py-1 text-xs text-slate-200 hover:bg-white/5 disabled:opacity-50"
+                            className="rounded-md border border-white/10 px-2.5 py-1 text-xs text-slate-200 transition hover:bg-white/5 disabled:opacity-50"
                           >
                             {v.published ? "Despublicar" : "Publicar"}
                           </button>
                           <button
                             onClick={() => remove(v)}
                             disabled={busyId === v.id}
-                            className="rounded-md border border-[#ff5c7a]/35 bg-[#ff5c7a]/10 px-2.5 py-1 text-xs text-[#ffb0bf] hover:bg-[#ff5c7a]/20 disabled:opacity-50"
+                            className="rounded-md border border-[#ff5c7a]/35 bg-[#ff5c7a]/10 px-2.5 py-1 text-xs text-[#ffb0bf] transition hover:bg-[#ff5c7a]/20 disabled:opacity-50"
                           >
                             Excluir
                           </button>

@@ -6,14 +6,12 @@
 // (validado manualmente; o DB é Json livre).
 //
 // `DEFAULT_CONTENT` é o fallback hardcoded que mantém o site
-// funcionando mesmo sem nada no banco — usado por `getPageContent`.
+// funcionando mesmo sem nada no banco.
 //
-// Componentes consumidores passam a receber props com defaults
-// aplicados via spread (`{ ...DEFAULTS.x, ...saved }`), o que
-// garante compatibilidade se o DB estiver parcial.
+// ⚠️  Este arquivo é SEGURO para client components: NÃO importa
+// Prisma nem nada server-only. As funções que acessam o banco
+// estão em `./pageContent.server.ts`.
 // =========================================================
-
-import { prisma } from "@/lib/prisma";
 
 export const PAGE_CONTENT_KEYS = [
   "home_hero",
@@ -31,15 +29,12 @@ export const PAGE_CONTENT_KEYS = [
   "page_ferramentas_dashboard",
 ] as const;
 
-export type PageContentKey = (typeof PAGE_CONTENT_KEYS)[number];
+export type PageContentKey = typeof PAGE_CONTENT_KEYS[number];
 
-// =========================================================
-// Shapes (default = copy atual)
-// =========================================================
+// ─── Tipos de cada bloco ────────────────────────────────────
 
 export interface HomeHero {
   eyebrow: string;
-  /** título composto por before + highlight + after (highlight fica com gradient-orange) */
   titleBefore: string;
   titleHighlight: string;
   titleAfter: string;
@@ -48,13 +43,11 @@ export interface HomeHero {
   ctaPrimaryHref: string;
   ctaSecondaryLabel: string;
   ctaSecondaryHref: string;
-  bullets: string[];
+  bullets: readonly string[];
 }
 
 export interface HomeFeatured {
-  /** badge canto sup. esquerdo do card "Comece por aqui" */
   eyebrow: string;
-  /** pill acima do título ("Vídeo introdutório") */
   titlePrefix: string;
   ctaPrimaryLabel: string;
   ctaSecondaryLabel: string;
@@ -78,23 +71,25 @@ export interface NavLink {
 }
 
 export interface GlobalNavbar {
-  links: NavLink[];
+  links: readonly NavLink[];
   ctaLabel: string;
   ctaHref: string;
 }
 
 export interface GlobalFooter {
-  /** Texto antes do strong */
   descriptionPrefix: string;
-  /** Texto do strong */
   descriptionHighlight: string;
-  /** Texto depois do strong */
   descriptionSuffix: string;
-  platformLinks: NavLink[];
+  platformLinks: readonly NavLink[];
   contatoLabel: string;
   contatoEmail: string;
   plataformaGratuitaLabel: string;
   copyrightTagline: string;
+}
+
+export interface Crumb {
+  label: string;
+  href?: string;
 }
 
 export interface PageHeaderContent {
@@ -105,12 +100,14 @@ export interface PageHeaderContent {
   titleHighlight: string;
   titleAfter: string;
   subtitle: string;
-  crumbs: { label: string; href?: string }[];
+  crumbs: readonly Crumb[];
 }
 
 export interface StepBase {
+  key?: string;
   title: string;
   description: string;
+  icon?: string;
 }
 
 export interface MethodExplainerContent {
@@ -119,7 +116,7 @@ export interface MethodExplainerContent {
   titleHighlight: string;
   titleAfter: string;
   subtitle: string;
-  steps: StepBase[];
+  steps: readonly StepBase[];
 }
 
 export interface HowItWorksStep {
@@ -132,7 +129,7 @@ export interface HowItWorksContent {
   eyebrow: string;
   title: string;
   subtitle: string;
-  steps: HowItWorksStep[];
+  steps: readonly HowItWorksStep[];
 }
 
 export interface ToolItem {
@@ -145,11 +142,10 @@ export interface ToolItem {
 }
 
 export interface ToolsContent {
-  /** (opcional — ToolsGrid hoje não tem header, mas reservamos o espaço) */
   eyebrow: string;
   title: string;
   subtitle: string;
-  tools: ToolItem[];
+  tools: readonly ToolItem[];
 }
 
 export interface CalculatorHeader {
@@ -343,7 +339,7 @@ export const DEFAULT_CONTENT = {
       },
       {
         name: "Simulador de Operação",
-        description: "Simule diferentes cenários de investimento, entrada, evasão e comissão.",
+        description: "Projete cenários otimistas, pessimistas e o caso-base para decidir o que fazer.",
         status: "Em breve",
         cta: "Em breve",
         href: "#",
@@ -354,19 +350,18 @@ export const DEFAULT_CONTENT = {
 
   page_ferramentas_calculator: {
     titleBefore: "Calculadora de",
-    titleHighlight: "Operação",
+    titleHighlight: "operação",
     titleAfter: "",
     subtitle:
-      "Preencha com os dados reais do seu grupo e veja se a operação está pagando o esforço. Todos os cálculos são feitos no seu navegador — nada vai pro servidor.",
+      "Use os números reais do seu grupo para descobrir conversão, CAC efetivo, comissão, lucro e ROI.",
   } satisfies CalculatorHeader,
 
   page_ferramentas_dashboard: {
     eyebrow: "Métricas",
-    titleBefore: "As métricas que você precisa",
-    titleHighlight: "acompanhar",
+    titleBefore: "As métricas que",
+    titleHighlight: "importam",
     titleAfter: "",
-    subtitle:
-      "Toda operação de grupos lucrativos gira em torno de alguns números fundamentais. Aprenda o que cada um significa e como eles se conectam.",
+    subtitle: "Entenda cada número da operação em uma frase — sem jargão, sem fórmula.",
   } satisfies DashboardContent,
 } as const;
 
@@ -390,34 +385,6 @@ export const CONTENT_LABELS: Record<PageContentKey, { title: string; description
   page_ferramentas_calculator: { title: "Cabeçalho da calculadora", description: "Título e subtítulo da calculadora de operação", group: "Ferramentas" },
   page_ferramentas_dashboard: { title: "Cabeçalho do dashboard", description: "Título e subtítulo do dashboard de métricas", group: "Ferramentas" },
 };
-
-// =========================================================
-// getPageContent — usado pelos server components das páginas
-// públicas. Se o DB falhar ou não houver linha, usa fallback.
-// =========================================================
-
-export async function getPageContent<K extends PageContentKey>(
-  key: K,
-): Promise<(typeof DEFAULT_CONTENT)[K]> {
-  const fallback = DEFAULT_CONTENT[key];
-  try {
-    const row = await prisma.pageContent.findUnique({ where: { key } });
-    if (!row || !row.content) return fallback;
-    // Merge raso: o que está no banco sobrescreve o default. Campos
-    // novos no default continuam visíveis se o DB não os sobrescreveu.
-    const merged = { ...fallback, ...(row.content as object) };
-    return merged as (typeof DEFAULT_CONTENT)[K];
-  } catch (error) {
-    // DB offline, tabela inexistente, etc. — nunca quebra a página.
-    console.warn(`[pageContent] Falha ao ler ${key}, usando fallback`, error);
-    return fallback;
-  }
-}
-
-/** Lê várias chaves em paralelo. */
-export async function getPageContents<K extends PageContentKey>(keys: readonly K[]) {
-  return Promise.all(keys.map((k) => getPageContent(k)));
-}
 
 export function isPageContentKey(value: string): value is PageContentKey {
   return (PAGE_CONTENT_KEYS as readonly string[]).includes(value);

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { VideoLibraryFull } from "@/components/VideoLibrary";
-import { getPageContent } from "@/lib/pageContent";
+import { getPageContent } from "@/lib/pageContent.server";
 
 export const dynamic = "force-dynamic";
 

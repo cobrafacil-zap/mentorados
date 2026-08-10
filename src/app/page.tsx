@@ -3,7 +3,7 @@ import { Footer } from "@/components/Footer";
 import { Hero } from "@/components/Hero";
 import { FeaturedVideo } from "@/components/VideoLibrary";
 import { CallToAction } from "@/components/CallToAction";
-import { getPageContent } from "@/lib/pageContent";
+import { getPageContent } from "@/lib/pageContent.server";
 
 export const dynamic = "force-dynamic";
 

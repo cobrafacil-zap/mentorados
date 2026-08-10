@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { MethodExplainer } from "@/components/MethodExplainer";
 import { HowItWorks } from "@/components/HowItWorks";
-import { getPageContent } from "@/lib/pageContent";
+import { getPageContent } from "@/lib/pageContent.server";
 
 export const dynamic = "force-dynamic";
 

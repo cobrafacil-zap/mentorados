@@ -3,7 +3,7 @@ import { PageHeader } from "@/components/PageHeader";
 import { OperationCalculator } from "@/components/OperationCalculator";
 import { ToolsGrid } from "@/components/ToolsGrid";
 import { MetricsDashboard } from "@/components/MetricsDashboard";
-import { getPageContent } from "@/lib/pageContent";
+import { getPageContent } from "@/lib/pageContent.server";
 
 export const dynamic = "force-dynamic";
 

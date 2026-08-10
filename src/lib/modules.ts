@@ -8,8 +8,6 @@
 // recebem um array, então a troca é localizada.
 // =========================================================
 
-import type { VideoCategory } from "@/data/videos";
-
 export type ModuleSlug =
   | "fundamentos"
   | "trafego"
@@ -27,8 +25,10 @@ export interface ModuleDef {
   shortTitle: string;
   /** descrição curta exibida no header da seção */
   summary: string;
-  /** categorias que pertencem a este módulo (rótulo público) */
-  videoCategoryKeys: VideoCategory[];
+  /** categorias (rótulo público PT-BR) que pertencem a este módulo.
+   *  Aceita `string` para também cobrir o enum Prisma convertido via
+   *  `videoCategoryLabel()` — narrowing fica nas consumidoras. */
+  videoCategoryKeys: readonly string[];
 }
 
 export const MODULES: ModuleDef[] = [
@@ -39,7 +39,7 @@ export const MODULES: ModuleDef[] = [
     shortTitle: "Fundamentos",
     summary:
       "O que é o Método GL, como uma operação de grupos dá dinheiro e o fluxo do lead até o lucro.",
-    videoCategoryKeys: ["Comece por aqui", "Estrutura da Operação"],
+    videoCategoryKeys: ["Comece por aqui", "Estrutura da Operação"] as const,
   },
   {
     slug: "trafego",
@@ -48,7 +48,7 @@ export const MODULES: ModuleDef[] = [
     shortTitle: "Tráfego",
     summary:
       "Como levar pessoas qualificadas para o grupo: criativos, campanhas e as métricas que importam.",
-    videoCategoryKeys: ["Tráfego Pago", "Criativos", "Métricas"],
+    videoCategoryKeys: ["Tráfego Pago", "Criativos", "Métricas"] as const,
   },
   {
     slug: "retencao",
@@ -57,7 +57,7 @@ export const MODULES: ModuleDef[] = [
     shortTitle: "Retenção",
     summary:
       "Manter o grupo vivo: rotina, regras e como reduzir evasão para preservar LTV.",
-    videoCategoryKeys: ["Grupos", "Evasão"],
+    videoCategoryKeys: ["Grupos", "Evasão"] as const,
   },
   {
     slug: "escala",
@@ -66,15 +66,17 @@ export const MODULES: ModuleDef[] = [
     shortTitle: "Escala",
     summary:
       "Vender sem matar o grupo e fechar a conta: como a comissão vira caixa.",
-    videoCategoryKeys: ["Vendas", "Financeiro"],
+    videoCategoryKeys: ["Vendas", "Financeiro"] as const,
   },
 ];
 
 /** Slugs dos módulos na ordem canônica de exibição */
 export const MODULE_ORDER: ModuleSlug[] = MODULES.map((m) => m.slug);
 
-/** Encontra o módulo que contém a categoria dada, ou null. */
-export function moduleForCategory(category: VideoCategory): ModuleDef | null {
+/** Encontra o módulo que contém a categoria dada (rótulo PT-BR ou
+ *  enum Prisma — qualquer string que combine com `videoCategoryKeys`),
+ *  ou null. */
+export function moduleForCategory(category: string): ModuleDef | null {
   return MODULES.find((m) => m.videoCategoryKeys.includes(category)) ?? null;
 }
 

@@ -129,8 +129,12 @@ export function VideoForm({ initial, mode, backHref, defaultCategory }: Props) {
     setError(null);
 
     if (!title.trim()) return setError("Informe o título do vídeo.");
-    if (!videoUrl) return setError("Faça o upload do arquivo de vídeo antes de salvar.");
-    if (!duration || !/^\d{1,2}:\d{2}$/.test(duration)) {
+    // Em modo "em aguardo", o vídeo ainda não existe — o upload é opcional.
+    // Caso contrário, exige o arquivo.
+    if (!emAguardo && !videoUrl) {
+      return setError("Faça o upload do arquivo de vídeo antes de salvar.");
+    }
+    if (!emAguardo && (!duration || !/^\d{1,2}:\d{2}$/.test(duration))) {
       return setError("Informe a duração no formato MM:SS.");
     }
 
@@ -212,14 +216,38 @@ export function VideoForm({ initial, mode, backHref, defaultCategory }: Props) {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Coluna principal */}
         <div className="space-y-5 lg:col-span-2">
-          <Card title="Arquivo de vídeo">
+          <Card
+            title={
+              <span className="flex items-center justify-between gap-3">
+                <span>Arquivo de vídeo</span>
+                {emAguardo && (
+                  <span
+                    className="inline-flex items-center gap-1 rounded-full border border-[#ff7a18]/35 bg-[#ff7a18]/10 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wider text-[#ffb066]"
+                    title="No modo 'Em aguardo' o vídeo ainda não existe — você pode salvar sem upload e anexar o arquivo depois."
+                  >
+                    <svg width="10" height="10" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+                      <path d="M12 8v4l3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+                    </svg>
+                    upload opcional
+                  </span>
+                )}
+              </span>
+            }
+          >
             <VideoDropzone
               videoUrl={videoUrl}
               upload={videoUpload}
               onPick={handleVideoPick}
               inputRef={fileInputRef}
+              disabled={emAguardo && !videoUrl}
               onClear={() => { setVideoUrl(""); setVideoUpload({ status: "idle", progress: 0 }); }}
             />
+            {emAguardo && !videoUrl && (
+              <p className="rounded-md border border-[#ff7a18]/30 bg-[#ff7a18]/5 px-3 py-2 text-xs text-[#ffb066]">
+                Como a aula está marcada como <strong>Em aguardo</strong>, o arquivo de vídeo é opcional. Você pode salvar sem upload e adicionar o vídeo depois — assim que anexar, a aula passa a tocar normalmente para quem acessar.
+              </p>
+            )}
           </Card>
 
           <Card title="Thumbnail (opcional)">
@@ -340,7 +368,7 @@ export function VideoForm({ initial, mode, backHref, defaultCategory }: Props) {
   );
 }
 
-function Card({ title, children }: { title: string; children: React.ReactNode }) {
+function Card({ title, children }: { title: React.ReactNode; children: React.ReactNode }) {
   return (
     <section className="rounded-lg border border-zinc-800 bg-zinc-900/60">
       <header className="border-b border-zinc-800 px-5 py-3">
@@ -418,12 +446,17 @@ function VideoDropzone({
   onPick,
   inputRef,
   onClear,
+  disabled,
 }: {
   videoUrl: string;
   upload: UploadState;
   onPick: (f: File) => void;
   inputRef: React.MutableRefObject<HTMLInputElement | null>;
   onClear: () => void;
+  /** True quando o dropzone fica apenas visual (sem abrir file picker).
+   *  Usado no modo "em aguardo" sem arquivo ainda — usuário pode optar
+   *  por pular o upload agora e anexar depois. */
+  disabled?: boolean;
 }) {
   const [dragging, setDragging] = useState(false);
   const hasFile = !!videoUrl;
@@ -459,19 +492,22 @@ function VideoDropzone({
         </div>
       ) : (
         <label
-          onDragOver={(e) => { e.preventDefault(); setDragging(true); }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(e) => {
+          onDragOver={disabled ? undefined : (e) => { e.preventDefault(); setDragging(true); }}
+          onDragLeave={disabled ? undefined : (() => setDragging(false))}
+          onDrop={disabled ? undefined : (e) => {
             e.preventDefault();
             setDragging(false);
             const file = e.dataTransfer.files?.[0];
             if (file) onPick(file);
           }}
-          className={`flex cursor-pointer flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-10 text-center transition ${
-            dragging
-              ? "border-[#ff7a18] bg-[#ff7a18]/5"
-              : "border-zinc-800 bg-zinc-950 hover:border-zinc-700"
+          className={`flex flex-col items-center justify-center rounded-lg border-2 border-dashed px-6 py-10 text-center transition ${
+            disabled
+              ? "cursor-not-allowed border-zinc-800/60 bg-zinc-950/50 opacity-60"
+              : dragging
+                ? "cursor-pointer border-[#ff7a18] bg-[#ff7a18]/5"
+                : "cursor-pointer border-zinc-800 bg-zinc-950 hover:border-zinc-700"
           }`}
+          aria-disabled={disabled}
         >
           <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-zinc-900 text-[#ffb066] ring-1 ring-[#ff7a18]/30">
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true">

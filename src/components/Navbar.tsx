@@ -4,14 +4,14 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Logo } from "./Logo";
+import { DEFAULT_CONTENT, type GlobalNavbar as NavbarData } from "@/lib/pageContent";
 
-const NAV_ITEMS = [
-  { label: "Método GL", href: "/metodo" },
-  { label: "Aulas", href: "/aulas" },
-  { label: "Ferramentas", href: "/ferramentas" },
-];
+const NAVBAR_DEFAULTS = DEFAULT_CONTENT.global_navbar;
 
-export function Navbar() {
+export function Navbar(props: Partial<NavbarData> = {}) {
+  const links = props.links ?? NAVBAR_DEFAULTS.links;
+  const ctaLabel = props.ctaLabel ?? NAVBAR_DEFAULTS.ctaLabel;
+  const ctaHref = props.ctaHref ?? NAVBAR_DEFAULTS.ctaHref;
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const pathname = usePathname();
@@ -53,7 +53,7 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden items-center gap-1 lg:flex" aria-label="Menu principal">
-          {NAV_ITEMS.map((item) => {
+          {links.map((item) => {
             const active = isActive(item.href);
             return (
               <Link
@@ -73,8 +73,8 @@ export function Navbar() {
         </nav>
 
         <div className="hidden lg:block">
-          <Link href="/aulas" className="btn-primary text-sm">
-            COMEÇAR AGORA
+          <Link href={ctaHref} className="btn-primary text-sm">
+            {ctaLabel}
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
               <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
             </svg>
@@ -116,7 +116,7 @@ export function Navbar() {
         }`}
       >
         <nav className="flex flex-col gap-1 px-4 py-4" aria-label="Menu mobile">
-          {NAV_ITEMS.map((item) => {
+          {links.map((item) => {
             const active = isActive(item.href);
             return (
               <Link
@@ -133,8 +133,8 @@ export function Navbar() {
               </Link>
             );
           })}
-          <Link href="/aulas" className="btn-primary mt-2 text-sm">
-            COMEÇAR AGORA
+          <Link href={ctaHref} className="btn-primary mt-2 text-sm">
+            {ctaLabel}
           </Link>
         </nav>
       </div>

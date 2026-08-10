@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import { Logo } from "@/components/Logo";
 import { LogoutButton } from "@/components/LogoutButton";
 
-type NavKey = "dashboard" | "mentorados" | "videos";
+type NavKey = "dashboard" | "mentorados" | "videos" | "modulos" | "conteudo";
 
 interface NavItem {
   key: NavKey;
@@ -38,6 +38,29 @@ const NAV: NavItem[] = [
     ),
   },
   {
+    key: "modulos",
+    label: "Módulos",
+    href: "/admin/modulos",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+        <rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+        <rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+        <rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" strokeWidth="1.8" />
+      </svg>
+    ),
+  },
+  {
+    key: "conteudo",
+    label: "Conteúdo",
+    href: "/admin/conteudo",
+    icon: (
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <path d="M4 5h16v3H4zM4 11h16v3H4zM4 17h10v3H4z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+      </svg>
+    ),
+  },
+  {
     key: "mentorados",
     label: "Mentorados",
     href: "/admin",
@@ -54,6 +77,8 @@ const NAV: NavItem[] = [
 function activeKey(pathname: string | null): NavKey {
   if (!pathname) return "dashboard";
   if (pathname.startsWith("/admin/videos")) return "videos";
+  if (pathname.startsWith("/admin/modulos")) return "modulos";
+  if (pathname.startsWith("/admin/conteudo")) return "conteudo";
   if (pathname.startsWith("/admin/mentorados")) return "mentorados";
   return "dashboard";
 }

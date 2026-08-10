@@ -2,28 +2,43 @@ import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { MethodExplainer } from "@/components/MethodExplainer";
 import { HowItWorks } from "@/components/HowItWorks";
+import { getPageContent } from "@/lib/pageContent";
 
-export const metadata: Metadata = {
-  title: "O Método GL — Como funciona",
-  description:
-    "Entenda a metodologia por trás do Método GL: do tráfego pago à retenção, oferta, comissão e análise de resultado.",
-};
+export const dynamic = "force-dynamic";
 
-export default function MetodoPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const header = await getPageContent("page_metodo_header");
+  return {
+    title: header.metadataTitle,
+    description: header.metadataDescription,
+  };
+}
+
+export default async function MetodoPage() {
+  const [header, explainer, how] = await Promise.all([
+    getPageContent("page_metodo_header"),
+    getPageContent("page_metodo_explainer"),
+    getPageContent("page_metodo_how"),
+  ]);
+
+  const hd = header;
   return (
     <>
       <PageHeader
-        eyebrow="O Método GL"
+        eyebrow={hd.eyebrow}
         title={
           <>
-            A lógica por trás de <span className="text-gradient-orange">grupos lucrativos</span>.
+            {hd.titleBefore}{" "}
+            {hd.titleHighlight && (
+              <span className="text-gradient-orange">{hd.titleHighlight}</span>
+            )}{hd.titleAfter ? ` ${hd.titleAfter}` : ""}
           </>
         }
-        subtitle="Do tráfego pago ao lucro: como cada peça se encaixa, o que acontece em cada etapa e por que algumas operações funcionam enquanto outras não saem do lugar."
-        crumbs={[{ label: "Início", href: "/" }, { label: "O Método GL" }]}
+        subtitle={hd.subtitle}
+        crumbs={hd.crumbs}
       />
-      <MethodExplainer />
-      <HowItWorks />
+      <MethodExplainer {...explainer} />
+      <HowItWorks {...how} />
     </>
   );
 }

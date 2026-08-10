@@ -1,8 +1,24 @@
 "use client";
 
 import Link from "next/link";
+import { DEFAULT_CONTENT, type HomeHero as HomeHeroData } from "@/lib/pageContent";
 
-export function Hero() {
+const HERO_DEFAULTS = DEFAULT_CONTENT.home_hero;
+
+export function Hero(props: Partial<HomeHeroData> = {}) {
+  const {
+    eyebrow = HERO_DEFAULTS.eyebrow,
+    titleBefore = HERO_DEFAULTS.titleBefore,
+    titleHighlight = HERO_DEFAULTS.titleHighlight,
+    titleAfter = HERO_DEFAULTS.titleAfter,
+    subtitle = HERO_DEFAULTS.subtitle,
+    ctaPrimaryLabel = HERO_DEFAULTS.ctaPrimaryLabel,
+    ctaPrimaryHref = HERO_DEFAULTS.ctaPrimaryHref,
+    ctaSecondaryLabel = HERO_DEFAULTS.ctaSecondaryLabel,
+    ctaSecondaryHref = HERO_DEFAULTS.ctaSecondaryHref,
+    bullets = HERO_DEFAULTS.bullets,
+  } = props;
+
   return (
     <section id="top" className="relative overflow-hidden pt-28 pb-20 sm:pt-32 sm:pb-24">
       {/* grid sutil de fundo */}
@@ -16,50 +32,40 @@ export function Hero() {
         <div className="animate-slide-up lg:col-span-3">
           <div className="inline-flex items-center gap-2 rounded-full border border-[#ff7a18]/30 bg-[#ff7a18]/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#ffb066]">
             <span className="h-1.5 w-1.5 rounded-full bg-[#ff7a18] animate-pulse-dot" />
-            Plataforma 100% gratuita
+            {eyebrow}
           </div>
           <h1 className="mt-5 text-4xl font-bold leading-[1.05] tracking-tight text-white sm:text-5xl lg:text-6xl">
-            Aprenda a transformar{" "}
-            <span className="text-gradient">grupos em uma operação</span>{" "}
-            <span className="text-gradient-orange">lucrativa.</span>
+            {titleBefore}{" "}
+            {titleHighlight && (
+              <span className="text-gradient-orange">{titleHighlight}</span>
+            )}{" "}
+            {titleAfter}
           </h1>
           <p className="mt-5 max-w-xl text-base leading-relaxed text-slate-300 sm:text-lg">
-            Conteúdos, estratégias e ferramentas gratuitas para você aprender a
-            estruturar sua operação de grupos, trabalhar com tráfego pago e
-            acompanhar as métricas que realmente importam.
+            {subtitle}
           </p>
 
           <div className="mt-8 flex flex-col gap-3 sm:flex-row">
-            <Link href="/aulas" className="btn-primary">
-              COMEÇAR A APRENDER
+            <Link href={ctaPrimaryHref} className="btn-primary">
+              {ctaPrimaryLabel}
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
                 <path d="M5 12h14M13 5l7 7-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
               </svg>
             </Link>
-            <Link href="/metodo" className="btn-ghost">
-              CONHECER O MÉTODO GL
+            <Link href={ctaSecondaryHref} className="btn-ghost">
+              {ctaSecondaryLabel}
             </Link>
           </div>
 
           <div className="mt-10 flex flex-wrap items-center gap-6 text-sm text-slate-400">
-            <div className="flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M20 6L9 17l-5-5" stroke="#1fd29c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Sem login
-            </div>
-            <div className="flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M20 6L9 17l-5-5" stroke="#1fd29c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Sem cartão
-            </div>
-            <div className="flex items-center gap-2">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path d="M20 6L9 17l-5-5" stroke="#1fd29c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-              </svg>
-              Acesso imediato
-            </div>
+            {bullets.map((b) => (
+              <div key={b} className="flex items-center gap-2">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path d="M20 6L9 17l-5-5" stroke="#1fd29c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                </svg>
+                {b}
+              </div>
+            ))}
           </div>
         </div>
 

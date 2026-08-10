@@ -75,3 +75,14 @@ model Video {
   @@index([order])
 }
 
+/// Conteúdo editável de páginas públicas (LP). Cada `key` é um contrato
+/// (catálogo em `src/lib/pageContent.ts`); o `content` é JSON com shape
+/// específico da key. Páginas públicas leem via `getPageContent(key)` e
+/// sempre têm fallback hardcoded — se a linha não existir ou o DB cair,
+/// os defaults assumem sem quebrar a página.
+model PageContent {
+  key       String   @id
+  content   Json
+  updatedAt DateTime @updatedAt
+}
+

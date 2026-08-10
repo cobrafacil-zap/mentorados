@@ -13,6 +13,9 @@
 import { useMemo, useState } from "react";
 import { NumberField } from "./NumberField";
 import { BRL, INT, PCT, calculateOperation } from "@/lib/calc";
+import { DEFAULT_CONTENT, type CalculatorHeader as CalculatorHeaderData } from "@/lib/pageContent";
+
+const CALC_DEFAULTS = DEFAULT_CONTENT.page_ferramentas_calculator;
 
 const DEFAULT_INPUTS = {
   pessoasTrafego: 250,   // quantas entraram via tráfego pago
@@ -22,7 +25,13 @@ const DEFAULT_INPUTS = {
   receita: 1500,
 };
 
-export function OperationCalculator() {
+export function OperationCalculator(props: Partial<CalculatorHeaderData> = {}) {
+  const {
+    titleBefore = CALC_DEFAULTS.titleBefore,
+    titleHighlight = CALC_DEFAULTS.titleHighlight,
+    titleAfter = CALC_DEFAULTS.titleAfter,
+    subtitle = CALC_DEFAULTS.subtitle,
+  } = props;
   const [pessoasTrafego, setPessoasTrafego] = useState(DEFAULT_INPUTS.pessoasTrafego);
   const [pessoasGrupo, setPessoasGrupo] = useState(DEFAULT_INPUTS.pessoasGrupo);
   const [pedidos, setPedidos] = useState(DEFAULT_INPUTS.pedidos);
@@ -73,14 +82,12 @@ export function OperationCalculator() {
       {/* Cabeçalho curto */}
       <div>
         <h2 className="text-2xl font-bold text-white sm:text-3xl">
-          Calculadora de <span className="text-gradient-orange">Operação</span>
+          {titleBefore}{" "}
+          {titleHighlight && <span className="text-gradient-orange">{titleHighlight}</span>}{" "}
+          {titleAfter}
         </h2>
         <p className="mt-2 max-w-2xl text-sm leading-relaxed text-slate-300">
-          Preencha com os dados reais do seu grupo. A calculadora mostra
-          <span className="text-white"> lucro e ROI</span> (o que importa
-          pro caixa) e, abaixo, métricas de referência como conversão e
-          custo por pessoa — estas são aproximadas, porque o marketplace
-          não diz de onde veio cada venda.
+          {subtitle}
         </p>
       </div>
 

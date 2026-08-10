@@ -2,19 +2,40 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import Link from "next/link";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import type { Video } from "@prisma/client";
-import { VIDEO_CATEGORY_KEYS, videoCategoryLabel } from "@/lib/videoCategories";
+import { VIDEO_CATEGORY_KEYS, VIDEO_CATEGORY_LABELS, videoCategoryLabel } from "@/lib/videoCategories";
+import { moduleBySlug } from "@/lib/modules";
+
+/** Inverso de `videoCategoryLabel`: dado um label PT-BR ("Tráfego Pago")
+ *  devolve o enum Prisma ("TRAFEGO_PAGO"), ou undefined se não existir. */
+function categoryEnumFromLabel(label: string): string | undefined {
+  const entry = (Object.entries(VIDEO_CATEGORY_LABELS) as [string, string][])
+    .find(([, l]) => l === label);
+  return entry?.[0];
+}
 import { Toast, useToast } from "./_components/Toast";
 import { ConfirmDialog, useConfirm } from "./_components/ConfirmDialog";
 
 type SortKey = "order" | "title" | "category" | "duration" | "status" | "createdAt";
 
 export default function AdminVideosPage() {
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const moduleSlug = searchParams.get("module");
+  const activeModule = moduleSlug ? moduleBySlug(moduleSlug) : null;
+
   const [videos, setVideos] = useState<Video[] | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<string>("all");
+  // Quando vem com `?module=`, fixa a primeira categoria do módulo como pré-seleção.
+  const [category, setCategory] = useState<string>(() => {
+    if (!activeModule) return "all";
+    const firstLabel = activeModule.videoCategoryKeys[0];
+    return categoryEnumFromLabel(firstLabel) ?? "all";
+  });
   const [status, setStatus] = useState<"all" | "published" | "draft">("all");
   const [busyId, setBusyId] = useState<string | null>(null);
   const [bulkBusy, setBulkBusy] = useState(false);
@@ -240,6 +261,36 @@ export default function AdminVideosPage() {
           Novo vídeo
         </Link>
       </header>
+
+      {/* Banner de módulo ativo (vindo de `?module=`) */}
+      {activeModule && (
+        <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-[#ff7a18]/30 bg-[#ff7a18]/5 px-4 py-3">
+          <span className="inline-flex h-7 min-w-7 items-center justify-center rounded-md border border-[#ff7a18]/40 bg-[#ff7a18]/15 px-1.5 text-[11px] font-bold tabular-nums text-[#ffb066]">
+            {String(activeModule.order).padStart(2, "0")}
+          </span>
+          <div className="flex-1 min-w-0 text-xs">
+            <div className="text-slate-300">
+              Filtrando pelo módulo{" "}
+              <strong className="font-semibold text-white">{activeModule.shortTitle}</strong>
+            </div>
+            <div className="mt-0.5 text-[11px] text-slate-500">
+              Pré-selecionada a categoria{" "}
+              <span className="text-slate-300">
+                {videoCategoryLabel(category as Parameters<typeof videoCategoryLabel>[0])}
+              </span>
+              {" — "}
+              você pode trocar o filtro abaixo sem perder o contexto.
+            </div>
+          </div>
+          <button
+            type="button"
+            onClick={() => router.replace(pathname)}
+            className="rounded-lg border border-white/10 bg-white/5 px-3 py-1.5 text-xs font-medium text-slate-200 hover:border-white/20 hover:bg-white/10"
+          >
+            Limpar filtro
+          </button>
+        </div>
+      )}
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

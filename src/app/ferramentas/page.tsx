@@ -3,34 +3,50 @@ import { PageHeader } from "@/components/PageHeader";
 import { OperationCalculator } from "@/components/OperationCalculator";
 import { ToolsGrid } from "@/components/ToolsGrid";
 import { MetricsDashboard } from "@/components/MetricsDashboard";
+import { getPageContent } from "@/lib/pageContent";
 
-export const metadata: Metadata = {
-  title: "Ferramentas gratuitas — Método GL",
-  description:
-    "Calculadora de operação, métricas essenciais e ferramentas para analisar a sua operação de grupos de ofertas.",
-};
+export const dynamic = "force-dynamic";
 
-export default function FerramentasPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const header = await getPageContent("page_ferramentas_header");
+  return {
+    title: header.metadataTitle,
+    description: header.metadataDescription,
+  };
+}
+
+export default async function FerramentasPage() {
+  const [header, calculator, tools, dashboard] = await Promise.all([
+    getPageContent("page_ferramentas_header"),
+    getPageContent("page_ferramentas_calculator"),
+    getPageContent("page_ferramentas_tools"),
+    getPageContent("page_ferramentas_dashboard"),
+  ]);
+
+  const hd = header;
   return (
     <>
       <PageHeader
-        eyebrow="Ferramentas gratuitas"
+        eyebrow={hd.eyebrow}
         title={
           <>
-            Analise a sua <span className="text-gradient-orange">operação</span>.
+            {hd.titleBefore}{" "}
+            {hd.titleHighlight && (
+              <span className="text-gradient-orange">{hd.titleHighlight}</span>
+            )}{hd.titleAfter ? ` ${hd.titleAfter}` : ""}
           </>
         }
-        subtitle="Ferramentas práticas para você entender, com os números reais do seu grupo, se a operação está pagando o esforço."
-        crumbs={[{ label: "Início", href: "/" }, { label: "Ferramentas" }]}
+        subtitle={hd.subtitle}
+        crumbs={hd.crumbs}
       />
       <div className="pb-24 sm:pb-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <OperationCalculator />
+          <OperationCalculator {...calculator} />
           <div className="mt-24 sm:mt-32">
-            <ToolsGrid />
+            <ToolsGrid {...tools} />
           </div>
           <div className="mt-24 sm:mt-32">
-            <MetricsDashboard />
+            <MetricsDashboard {...dashboard} />
           </div>
         </div>
       </div>

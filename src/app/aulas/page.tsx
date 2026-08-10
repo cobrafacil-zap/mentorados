@@ -1,25 +1,36 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/PageHeader";
 import { VideoLibraryFull } from "@/components/VideoLibrary";
+import { getPageContent } from "@/lib/pageContent";
 
-export const metadata: Metadata = {
-  title: "Aulas gratuitas — Método GL",
-  description:
-    "Conteúdos gratuitos sobre operação de grupos, tráfego pago, criativos, métricas e muito mais. Assista direto na plataforma, sem cadastro.",
-};
+export const dynamic = "force-dynamic";
 
-export default function AulasPage() {
+export async function generateMetadata(): Promise<Metadata> {
+  const header = await getPageContent("page_aulas_header");
+  return {
+    title: header.metadataTitle,
+    description: header.metadataDescription,
+  };
+}
+
+export default async function AulasPage() {
+  const header = await getPageContent("page_aulas_header");
+
+  const hd = header;
   return (
     <>
       <PageHeader
-        eyebrow="Aulas gratuitas"
+        eyebrow={hd.eyebrow}
         title={
           <>
-            Aprenda com o <span className="text-gradient-orange">Método GL</span>.
+            {hd.titleBefore}{" "}
+            {hd.titleHighlight && (
+              <span className="text-gradient-orange">{hd.titleHighlight}</span>
+            )}{hd.titleAfter ? ` ${hd.titleAfter}` : ""}
           </>
         }
-        subtitle="Quatro trilhas, do fundamento à escala. Sua evolução fica salva no seu navegador — sem cadastro, sem login."
-        crumbs={[{ label: "Início", href: "/" }, { label: "Aulas" }]}
+        subtitle={hd.subtitle}
+        crumbs={hd.crumbs}
       />
       <div className="pb-24 sm:pb-32">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">

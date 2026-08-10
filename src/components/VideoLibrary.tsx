@@ -4,16 +4,25 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { VIDEOS, type VideoItem } from "@/data/videos";
 import { MODULES, type ModuleDef } from "@/lib/modules";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
+import { DEFAULT_CONTENT, type HomeFeatured as FeaturedData } from "@/lib/pageContent";
 import { Reveal } from "./Reveal";
 import { VideoModuleSection } from "./VideoModuleSection";
 
 const FEATURED_VIDEO = VIDEOS.find((v) => v.featured) ?? VIDEOS[0];
+const FEATURED_DEFAULTS = DEFAULT_CONTENT.home_featured;
 
 // =========================================================
 // Card "Comece por aqui" — usado na home.
 // Usa o VideoModal em modo lite (sem prev/next/marcar).
 // =========================================================
-export function FeaturedVideo() {
+export function FeaturedVideo(props: Partial<FeaturedData> = {}) {
+  const {
+    eyebrow = FEATURED_DEFAULTS.eyebrow,
+    titlePrefix = FEATURED_DEFAULTS.titlePrefix,
+    ctaPrimaryLabel = FEATURED_DEFAULTS.ctaPrimaryLabel,
+    ctaSecondaryLabel = FEATURED_DEFAULTS.ctaSecondaryLabel,
+    ctaSecondaryHref = FEATURED_DEFAULTS.ctaSecondaryHref,
+  } = props;
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -56,7 +65,7 @@ export function FeaturedVideo() {
                 </div>
                 <div className="absolute left-4 top-4 inline-flex items-center gap-2 rounded-full bg-[#ff7a18] px-3 py-1 text-xs font-semibold text-black">
                   <span className="h-1.5 w-1.5 rounded-full bg-black animate-pulse-dot" />
-                  Comece por aqui
+                  {eyebrow}
                 </div>
                 <div className="absolute bottom-4 right-4 rounded-md bg-black/70 px-2 py-1 text-xs text-white">
                   {FEATURED_VIDEO.duration}
@@ -65,7 +74,7 @@ export function FeaturedVideo() {
 
               <div className="flex flex-col justify-center p-8 sm:p-10">
                 <div className="mb-3 inline-flex w-fit items-center gap-2 rounded-full border border-[#ff7a18]/30 bg-[#ff7a18]/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-[#ffb066]">
-                  Vídeo introdutório
+                  {titlePrefix}
                 </div>
                 <h2 className="text-2xl font-bold text-white sm:text-3xl">
                   {FEATURED_VIDEO.title}
@@ -75,13 +84,13 @@ export function FeaturedVideo() {
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <button onClick={() => setOpen(true)} className="btn-primary">
-                    Assistir agora
+                    {ctaPrimaryLabel}
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                       <path d="M8 5v14l11-7z" />
                     </svg>
                   </button>
-                  <a href="/aulas" className="btn-ghost">
-                    Ver todas as aulas
+                  <a href={ctaSecondaryHref} className="btn-ghost">
+                    {ctaSecondaryLabel}
                   </a>
                 </div>
               </div>

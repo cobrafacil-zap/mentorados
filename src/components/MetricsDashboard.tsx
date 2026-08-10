@@ -1,5 +1,8 @@
 import { Section } from "./Section";
 import { Reveal } from "./Reveal";
+import { DEFAULT_CONTENT, type DashboardContent as Data } from "@/lib/pageContent";
+
+const DEFAULTS = DEFAULT_CONTENT.page_ferramentas_dashboard;
 
 const METRICS = [
   {
@@ -77,12 +80,26 @@ const METRICS = [
   },
 ];
 
-export function MetricsDashboard() {
+export function MetricsDashboard(props: Partial<Data> = {}) {
+  const {
+    eyebrow = DEFAULTS.eyebrow,
+    titleBefore = DEFAULTS.titleBefore,
+    titleHighlight = DEFAULTS.titleHighlight,
+    titleAfter = DEFAULTS.titleAfter,
+    subtitle = DEFAULTS.subtitle,
+  } = props;
+
   return (
     <Section
-      eyebrow="Métricas"
-      title={<>As métricas que você precisa <span className="text-gradient-orange">acompanhar</span></>}
-      subtitle="Toda operação de grupos lucrativos gira em torno de alguns números fundamentais. Aprenda o que cada um significa e como eles se conectam."
+      eyebrow={eyebrow}
+      title={
+        <>
+          {titleBefore}{" "}
+          {titleHighlight && <span className="text-gradient-orange">{titleHighlight}</span>}{" "}
+          {titleAfter}
+        </>
+      }
+      subtitle={subtitle}
     >
       <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
         {METRICS.map((m, idx) => (

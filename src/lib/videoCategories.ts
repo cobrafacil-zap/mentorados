@@ -22,3 +22,6 @@ export const VIDEO_CATEGORY_KEYS = Object.keys(VIDEO_CATEGORY_LABELS) as VideoCa
 export function videoCategoryLabel(value: string): string {
   return (VIDEO_CATEGORY_LABELS as Record<string, string>)[value] ?? value;
 }
+
+// Re-exporta o sistema de módulos (trilhas) para conveniência.
+export { MODULES, moduleForCategory, moduleBySlug, MODULE_ORDER } from "./modules";

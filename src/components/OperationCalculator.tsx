@@ -6,27 +6,27 @@ import { BRL, INT, PCT, calculateOperation } from "@/lib/calc";
 
 const DEFAULT_INPUTS = {
   pessoas: 500,
-  compradores: 75,
+  pedidos: 75,
   gasto: 1000,
   receita: 1500,
 };
 
 export function OperationCalculator() {
   const [pessoas, setPessoas] = useState(DEFAULT_INPUTS.pessoas);
-  const [compradores, setCompradores] = useState(DEFAULT_INPUTS.compradores);
+  const [pedidos, setPedidos] = useState(DEFAULT_INPUTS.pedidos);
   const [gasto, setGasto] = useState(DEFAULT_INPUTS.gasto);
   const [receita, setReceita] = useState(DEFAULT_INPUTS.receita);
 
-  const inputs = { pessoas, compradores, gasto, receita };
-  const result = useMemo(() => calculateOperation(inputs), [pessoas, compradores, gasto, receita]);
+  const inputs = { pessoas, pedidos, gasto, receita };
+  const result = useMemo(() => calculateOperation(inputs), [pessoas, pedidos, gasto, receita]);
 
-  const compradoresInvalid = compradores > pessoas;
+  const pedidosInvalid = pedidos > pessoas;
   const hasError =
     pessoas <= 0 ||
-    compradores < 0 ||
+    pedidos < 0 ||
     gasto < 0 ||
     receita < 0 ||
-    compradoresInvalid;
+    pedidosInvalid;
 
   // Cenários rápidos (taxas hipotéticas aplicadas à base atual)
   const taxaAtual = result.taxaConversao;
@@ -37,19 +37,19 @@ export function OperationCalculator() {
       { label: "Otimista", taxa: Math.min(1, taxaAtual * 1.5) },
     ];
     return taxas.map((t) => {
-      const compradoresCenario = Math.round(pessoas * t.taxa);
-      const receitaCenario = compradoresCenario * (compradores > 0 ? receita / compradores : 0);
+      const pedidosCenario = Math.round(pessoas * t.taxa);
+      const receitaCenario = pedidosCenario * (pedidos > 0 ? receita / pedidos : 0);
       const lucro = receitaCenario - gasto;
       const roi = gasto > 0 ? lucro / gasto : 0;
       return {
         ...t,
-        compradoresCenario,
+        pedidosCenario,
         receitaCenario,
         lucro,
         roi,
       };
     });
-  }, [pessoas, compradores, gasto, receita, taxaAtual]);
+  }, [pessoas, pedidos, gasto, receita, taxaAtual]);
 
   return (
     <div className="space-y-8">
@@ -88,15 +88,15 @@ export function OperationCalculator() {
                 invalidMessage="Informe uma quantidade maior que zero."
               />
               <NumberField
-                label="Compradores"
-                hint={`máx. ${INT(pessoas)}`}
-                value={compradores}
-                onChange={setCompradores}
+                label="Pedidos"
+                hint="vindos do seu link"
+                value={pedidos}
+                onChange={setPedidos}
                 decimals={0}
-                invalid={compradores < 0 || compradoresInvalid}
+                invalid={pedidos < 0 || pedidosInvalid}
                 invalidMessage={
-                  compradoresInvalid
-                    ? "Compradores não pode ser maior que pessoas no grupo."
+                  pedidosInvalid
+                    ? "Pedidos não pode ser maior que pessoas no grupo."
                     : "Informe uma quantidade maior ou igual a zero."
                 }
               />
@@ -125,7 +125,7 @@ export function OperationCalculator() {
             <button
               onClick={() => {
                 setPessoas(DEFAULT_INPUTS.pessoas);
-                setCompradores(DEFAULT_INPUTS.compradores);
+                setPedidos(DEFAULT_INPUTS.pedidos);
                 setGasto(DEFAULT_INPUTS.gasto);
                 setReceita(DEFAULT_INPUTS.receita);
               }}
@@ -139,13 +139,13 @@ export function OperationCalculator() {
         {/* Resultados */}
         <div className="lg:col-span-3">
           <div className="grid gap-3 sm:grid-cols-2">
-            <MetricCard label="Taxa de conversão" value={PCT(result.taxaConversao, 1)} hint="compradores ÷ pessoas" />
-            <MetricCard label="Ticket médio" value={BRL(result.ticketMedio)} hint="receita ÷ compradores" />
+            <MetricCard label="Taxa de conversão" value={PCT(result.taxaConversao, 1)} hint="pedidos ÷ pessoas" />
+            <MetricCard label="Ticket médio" value={BRL(result.ticketMedio)} hint="receita ÷ pedidos" />
             <MetricCard label="Custo por pessoa" value={BRL(result.custoPorPessoa)} hint="gasto ÷ pessoas" />
             <MetricCard
               label="CAC efetivo"
               value={BRL(result.cacEfetivo)}
-              hint="gasto ÷ compradores"
+              hint="gasto ÷ pedidos"
               accent="orange-strong"
               highlight
             />
@@ -214,8 +214,8 @@ export function OperationCalculator() {
                 </div>
                 <div className="mt-3 space-y-1.5 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-slate-400">Compradores</span>
-                    <span className="font-semibold text-white">{INT(c.compradoresCenario)}</span>
+                    <span className="text-slate-400">Pedidos</span>
+                    <span className="font-semibold text-white">{INT(c.pedidosCenario)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-slate-400">Receita estimada</span>
@@ -247,7 +247,7 @@ export function OperationCalculator() {
           <div className="mb-3 inline-flex items-center gap-2 rounded-full border border-[#ff7a18]/30 bg-[#ff7a18]/10 px-3 py-1 text-[10px] font-semibold uppercase tracking-wider text-[#ffb066]">
             Conceito-chave
           </div>
-          <h3 className="text-lg font-semibold text-white">Custo real por comprador</h3>
+          <h3 className="text-lg font-semibold text-white">Custo real por pedido</h3>
           <p className="mt-1.5 max-w-2xl text-sm leading-relaxed text-slate-300">
             Trazer uma pessoa para o grupo é só o começo. Se poucas compram, o
             custo real de cada venda é maior do que parece. Esta é a métrica que

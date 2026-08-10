@@ -45,32 +45,32 @@ export function calculate(inputs: CalculatorInputs): CalculatorOutputs {
 
 export interface OperationInputs {
   pessoas: number;       // Quantas pessoas estão no grupo
-  compradores: number;   // Quantas compraram via link
+  pedidos: number;       // Quantos pedidos apareceram na loja vindos do seu link
   gasto: number;         // R$ gasto (tráfego, criativos, ferramentas)
   receita: number;       // R$ recebido em comissão
 }
 
 export interface OperationOutputs {
-  taxaConversao: number;            // compradores / pessoas  (0..1)
-  ticketMedio: number;              // receita / compradores
+  taxaConversao: number;            // pedidos / pessoas  (0..1)
+  ticketMedio: number;              // receita / pedidos
   custoPorPessoa: number;           // gasto / pessoas
-  cacEfetivo: number;               // gasto / compradores
+  cacEfetivo: number;               // gasto / pedidos
   lucro: number;                    // receita - gasto
   roi: number;                      // lucro / gasto  (0..1)
   comissaoMediaPorPessoa: number;   // receita / pessoas
 }
 
 export function calculateOperation(inputs: OperationInputs): OperationOutputs {
-  const { pessoas, compradores, gasto, receita } = inputs;
+  const { pessoas, pedidos, gasto, receita } = inputs;
   const safePessoas = Math.max(0, pessoas);
-  const safeCompradores = Math.max(0, Math.min(compradores, safePessoas));
+  const safePedidos = Math.max(0, Math.min(pedidos, safePessoas));
   const safeGasto = Math.max(0, gasto);
   const safeReceita = Math.max(0, receita);
 
-  const taxaConversao = safePessoas > 0 ? safeCompradores / safePessoas : 0;
-  const ticketMedio = safeCompradores > 0 ? safeReceita / safeCompradores : 0;
+  const taxaConversao = safePessoas > 0 ? safePedidos / safePessoas : 0;
+  const ticketMedio = safePedidos > 0 ? safeReceita / safePedidos : 0;
   const custoPorPessoa = safePessoas > 0 ? safeGasto / safePessoas : 0;
-  const cacEfetivo = safeCompradores > 0 ? safeGasto / safeCompradores : 0;
+  const cacEfetivo = safePedidos > 0 ? safeGasto / safePedidos : 0;
   const lucro = safeReceita - safeGasto;
   const roi = safeGasto > 0 ? lucro / safeGasto : 0;
   const comissaoMediaPorPessoa = safePessoas > 0 ? safeReceita / safePessoas : 0;

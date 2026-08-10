@@ -18,7 +18,7 @@ export default function AulasPage() {
             Aprenda com o <span className="text-gradient-orange">Método GL</span>.
           </>
         }
-        subtitle="Vídeos curtos e diretos sobre grupos, tráfego, retenção e métricas. Comece pelo vídeo em destaque ou explore por categoria."
+        subtitle="Quatro trilhas, do fundamento à escala. Sua evolução fica salva no seu navegador — sem cadastro, sem login."
         crumbs={[{ label: "Início", href: "/" }, { label: "Aulas" }]}
       />
       <div className="pb-24 sm:pb-32">

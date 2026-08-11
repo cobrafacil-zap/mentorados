@@ -4,6 +4,7 @@ import { Hero } from "@/components/Hero";
 import { FeaturedVideo } from "@/components/VideoLibrary";
 import { CallToAction } from "@/components/CallToAction";
 import { getPageContent } from "@/lib/pageContent.server";
+import { getFeaturedVideo } from "@/lib/videos.server";
 
 export const dynamic = "force-dynamic";
 
@@ -14,12 +15,13 @@ export const metadata = {
 };
 
 export default async function Home() {
-  const [navbar, footer, hero, featured, cta] = await Promise.all([
+  const [navbar, footer, hero, featured, cta, featuredVideo] = await Promise.all([
     getPageContent("global_navbar"),
     getPageContent("global_footer"),
     getPageContent("home_hero"),
     getPageContent("home_featured"),
     getPageContent("home_cta"),
+    getFeaturedVideo(),
   ]);
 
   return (
@@ -27,7 +29,7 @@ export default async function Home() {
       <Navbar {...navbar} />
       <main>
         <Hero {...hero} />
-        <FeaturedVideo {...featured} />
+        <FeaturedVideo video={featuredVideo} {...featured} />
         <CallToAction {...cta} />
       </main>
       <Footer {...footer} />

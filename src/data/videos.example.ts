@@ -1,6 +1,11 @@
 // =========================================================
-// Conteúdo: catálogo de vídeos
-// Substitua `videoUrl` pelos links reais do YouTube/Vimeo.
+// Dados de exemplo — APENAS para o seed do painel admin
+// (/api/admin/videos/seed).
+//
+// NÃO é fonte da verdade: a página pública /aulas agora lê
+// do banco via getPublicVideos() em src/lib/videos.server.ts.
+// Este array existe para um botão "Importar exemplo" no admin
+// popular o banco com 10 aulas-placeholder na primeira vez.
 // =========================================================
 
 export type VideoCategory =
@@ -20,12 +25,12 @@ export interface VideoItem {
   description: string;
   duration: string;
   category: VideoCategory;
-  videoUrl: string; // URL do vídeo (YouTube embed, Vimeo, etc.)
-  thumbnail: string; // Imagem de capa
+  videoUrl: string;
+  /** Thumbnail pode estar ausente (Prisma model.Video.thumbnail é nullable). */
+  thumbnail?: string;
   featured?: boolean;
-  // "Em aguardo" — continua aparecendo na listagem com badge "Em breve",
-  // mas o player fica bloqueado (mostra mensagem "Em breve" no lugar).
-  // Útil para sinalizar conteúdo futuro sem escondê-lo do aluno.
+  /** Quando true, vídeo aparece na listagem com badge "Em breve",
+   *  mas o player fica bloqueado. */
   emAguardo?: boolean;
 }
 

@@ -10,7 +10,7 @@
 //    "Em breve" e o botão de play é desabilitado.
 // =========================================================
 
-import type { VideoItem } from "@/data/videos";
+import type { VideoItem } from "@/data/videos.example";
 
 export function VideoCardTracked({
   video,

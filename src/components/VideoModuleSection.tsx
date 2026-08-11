@@ -10,7 +10,7 @@ import type { ModuleDef } from "@/lib/modules";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
 import { ModuleProgressBar } from "./ModuleProgressBar";
 import { VideoCardTracked } from "./VideoCardTracked";
-import type { VideoItem } from "@/data/videos";
+import type { VideoItem } from "@/data/videos.example";
 
 export function VideoModuleSection({
   module: mod,

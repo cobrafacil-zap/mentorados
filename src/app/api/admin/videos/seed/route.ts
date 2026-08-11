@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { requireAdmin } from "@/lib/adminAuth";
-import { VIDEOS } from "@/data/videos";
+import { VIDEOS } from "@/data/videos.example";
 import { videoCategoryLabel } from "@/lib/videoCategories";
 import { VideoCategory } from "@prisma/client";
 

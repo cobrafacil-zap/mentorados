@@ -1,21 +1,49 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { VIDEOS, type VideoItem } from "@/data/videos";
+import type { VideoItem } from "@/data/videos.example";
 import { MODULES, type ModuleDef } from "@/lib/modules";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
 import { DEFAULT_CONTENT, type HomeFeatured as FeaturedData } from "@/lib/pageContent";
 import { Reveal } from "./Reveal";
 import { VideoModuleSection } from "./VideoModuleSection";
 
-const FEATURED_VIDEO = VIDEOS.find((v) => v.featured) ?? VIDEOS[0];
 const FEATURED_DEFAULTS = DEFAULT_CONTENT.home_featured;
+
+/**
+ * Empty state compartilhado — quando o banco está vazio
+ * ou retorna erro (DB offline, tabela inexistente).
+ */
+function EmptyState({ message }: { message?: string }) {
+  return (
+    <div className="rounded-2xl border border-dashed border-white/10 bg-white/[0.02] p-10 text-center">
+      <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full border border-[#ff7a18]/25 bg-[#ff7a18]/10 text-[#ffb066]">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <circle cx="12" cy="12" r="9" stroke="currentColor" strokeWidth="2" />
+          <path d="M12 8v4l3 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
+        </svg>
+      </div>
+      <p className="text-sm font-semibold text-white">
+        {message ?? "Nenhuma aula disponível no momento"}
+      </p>
+      <p className="mt-1 text-xs text-slate-400">
+        Estamos preparando o conteúdo. Volte em alguns dias.
+      </p>
+    </div>
+  );
+}
 
 // =========================================================
 // Card "Comece por aqui" — usado na home.
 // Usa o VideoModal em modo lite (sem prev/next/marcar).
+//
+// Recebe `video` como prop (vem do banco via getFeaturedVideo()).
+// Se não houver vídeo, renderiza empty state — nunca quebra.
 // =========================================================
-export function FeaturedVideo(props: Partial<FeaturedData> = {}) {
+export function FeaturedVideo({
+  video,
+  ...props
+}: Partial<FeaturedData> & { video: VideoItem | null }) {
   const {
     eyebrow = FEATURED_DEFAULTS.eyebrow,
     titlePrefix = FEATURED_DEFAULTS.titlePrefix,
@@ -39,6 +67,16 @@ export function FeaturedVideo(props: Partial<FeaturedData> = {}) {
     return () => window.removeEventListener("keydown", onKey);
   }, [open]);
 
+  if (!video) {
+    return (
+      <section id="comece-por-aqui" className="relative scroll-mt-24 py-16 sm:py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <EmptyState />
+        </div>
+      </section>
+    );
+  }
+
   return (
     <section id="comece-por-aqui" className="relative scroll-mt-24 py-16 sm:py-20">
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -48,13 +86,15 @@ export function FeaturedVideo(props: Partial<FeaturedData> = {}) {
               <button
                 onClick={() => setOpen(true)}
                 className="group relative aspect-video overflow-hidden text-left lg:aspect-auto"
-                aria-label={`Assistir: ${FEATURED_VIDEO.title}`}
+                aria-label={`Assistir: ${video.title}`}
               >
-                <img
-                  src={FEATURED_VIDEO.thumbnail}
-                  alt=""
-                  className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
-                />
+                {video.thumbnail && (
+                  <img
+                    src={video.thumbnail}
+                    alt=""
+                    className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
+                  />
+                )}
                 <div className="absolute inset-0 bg-gradient-to-t from-[#050a1a] via-[#050a1a]/30 to-transparent lg:bg-gradient-to-r" />
                 <div className="absolute inset-0 flex items-center justify-center">
                   <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#ff7a18]/95 text-white shadow-[0_8px_40px_rgba(255,122,24,0.6)] transition group-hover:scale-110">
@@ -68,7 +108,7 @@ export function FeaturedVideo(props: Partial<FeaturedData> = {}) {
                   {eyebrow}
                 </div>
                 <div className="absolute bottom-4 right-4 rounded-md bg-black/70 px-2 py-1 text-xs text-white">
-                  {FEATURED_VIDEO.duration}
+                  {video.duration}
                 </div>
               </button>
 
@@ -77,10 +117,10 @@ export function FeaturedVideo(props: Partial<FeaturedData> = {}) {
                   {titlePrefix}
                 </div>
                 <h2 className="text-2xl font-bold text-white sm:text-3xl">
-                  {FEATURED_VIDEO.title}
+                  {video.title}
                 </h2>
                 <p className="mt-3 text-sm leading-relaxed text-slate-300">
-                  {FEATURED_VIDEO.description}
+                  {video.description}
                 </p>
                 <div className="mt-6 flex flex-wrap gap-3">
                   <button onClick={() => setOpen(true)} className="btn-primary">
@@ -99,7 +139,7 @@ export function FeaturedVideo(props: Partial<FeaturedData> = {}) {
         </Reveal>
       </div>
 
-      <VideoModal video={open ? FEATURED_VIDEO : null} onClose={() => setOpen(false)} />
+      <VideoModal video={open ? video : null} onClose={() => setOpen(false)} />
     </section>
   );
 }
@@ -107,8 +147,11 @@ export function FeaturedVideo(props: Partial<FeaturedData> = {}) {
 // =========================================================
 // Biblioteca completa — usada na página /aulas.
 // 4 módulos (trilhas) com progresso persistido em localStorage.
+//
+// Recebe `videos` como prop (vem do banco via getPublicVideos()).
+// Se o array vier vazio, renderiza empty state — nunca quebra.
 // =========================================================
-export function VideoLibraryFull() {
+export function VideoLibraryFull({ videos }: { videos: VideoItem[] }) {
   const [open, setOpen] = useState<VideoItem | null>(null);
   const { isComplete, toggle } = useVideoProgress();
 
@@ -116,12 +159,23 @@ export function VideoLibraryFull() {
   const grouped = useMemo(() => {
     return MODULES.map((m) => ({
       module: m,
-      videos: VIDEOS.filter((v) => m.videoCategoryKeys.includes(v.category)),
+      videos: videos.filter((v) => m.videoCategoryKeys.includes(v.category)),
     }));
-  }, []);
+  }, [videos]);
 
-  // Vídeo em destaque (hero) — primeiro módulo.
-  const featured = FEATURED_VIDEO;
+  // Vídeo em destaque (hero) — primeiro com `featured=true` ou o primeiro.
+  const featured = useMemo(
+    () => videos.find((v) => v.featured) ?? videos[0],
+    [videos],
+  );
+
+  if (!featured) {
+    return (
+      <div className="mx-auto max-w-7xl">
+        <EmptyState />
+      </div>
+    );
+  }
 
   // Lock do scroll enquanto modal estiver aberto.
   useEffect(() => {
@@ -274,8 +328,8 @@ function useModalNeighbors(
 
 // Compatibilidade retroativa: alguns imports antigos podem ainda apontar para
 // VideoLibrary. Mantemos um alias que aponta para a versão completa.
-export function VideoLibrary(_props: { children?: never }) {
-  return <VideoLibraryFull />;
+export function VideoLibrary({ videos }: { videos: VideoItem[] }) {
+  return <VideoLibraryFull videos={videos} />;
 }
 
 // =========================================================

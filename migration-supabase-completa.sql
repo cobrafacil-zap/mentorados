@@ -120,11 +120,11 @@ END $$;
 -- Deve mostrar: PageContent, Mentorado, User, Video
 --
 -- Pronto!
--- 1. Acesse https://metodogl.online/admin/login
+-- 1. Acesse https://metodogl.site/admin/login
 -- 2. Se não tiver usuário admin, rode:
---      curl -X POST https://metodogl.online/api/seed
---    Isso cria admin@metodogl.online / admin123
+--      curl -X POST https://metodogl.site/api/seed
+--    Isso cria admin@metodogl.site / admin123
 -- 3. Vá em /admin/videos e clique em "Importar exemplo"
 --    para popular com os 10 vídeos de data/videos.ts
--- 4. Para diagnóstico: https://metodogl.online/api/admin/healthcheck
+-- 4. Para diagnóstico: https://metodogl.site/api/admin/healthcheck
 -- =========================================================

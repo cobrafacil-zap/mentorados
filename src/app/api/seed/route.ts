@@ -11,7 +11,7 @@ export async function GET() {
 
     await prisma.user.create({
       data: {
-        email: "admin@metodogl.online",
+        email: "admin@metodogl.site",
         password: await hashPassword("admin123"),
         name: "Administrador",
       },
@@ -19,7 +19,7 @@ export async function GET() {
 
     return NextResponse.json({
       message: "Usuário criado",
-      email: "admin@metodogl.online",
+      email: "admin@metodogl.site",
       password: "admin123",
     });
   } catch (error) {

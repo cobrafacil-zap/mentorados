@@ -18,7 +18,7 @@ export const metadata: Metadata = {
   title: "Método GL — Método de Grupos Lucrativos",
   description:
     "Plataforma gratuita com conteúdos, estratégias e ferramentas para você aprender a estruturar, divulgar e analisar operações de grupos de ofertas com tráfego pago.",
-  metadataBase: new URL("https://metodogl.online"),
+  metadataBase: new URL("https://metodogl.site"),
   icons: {
     icon: [
       { url: "/icon.svg", type: "image/svg+xml" },

@@ -223,7 +223,7 @@ export const DEFAULT_CONTENT = {
       { label: "Ferramentas", href: "/ferramentas" },
     ],
     contatoLabel: "Contato",
-    contatoEmail: "contato@metodogl.online",
+    contatoEmail: "contato@metodogl.site",
     plataformaGratuitaLabel: "Plataforma 100% gratuita",
     copyrightTagline: "Conteúdo educacional. Resultados dependem de operação, mercado e execução.",
   } satisfies GlobalFooter,

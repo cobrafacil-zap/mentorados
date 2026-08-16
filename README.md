@@ -6,7 +6,7 @@ Sistema multi-tenant para criar páginas de captura individuais para cada mentor
 
 - **Painel administrativo** protegido por login (`/admin`)
 - **CRUD de mentorados** com todos os textos, cores, imagem e link editáveis
-- **Subdomínio automático** no formato `slug.metodogl.online`
+- **Subdomínio automático** no formato `slug.metodogl.site`
 - **Meta Pixel individual** por mentorado
 - **Upload de imagens** via Supabase Storage
 
@@ -38,8 +38,8 @@ Variáveis necessárias (todas têm placeholder no `.env.example`):
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Chave pública (anon) | Supabase → Settings → API |
 | `SUPABASE_SERVICE_ROLE_KEY` | Chave admin (NUNCA expor no client) | Supabase → Settings → API |
 | `NEXTAUTH_SECRET` | Assinatura dos JWTs do NextAuth | `openssl rand -base64 32` |
-| `NEXTAUTH_URL` | URL pública do app | `http://localhost:3000` em dev, `https://metodogl.online` em prod |
-| `NEXT_PUBLIC_ROOT_DOMAIN` | Domínio base dos subdomínios | `metodogl.online` |
+| `NEXTAUTH_URL` | URL pública do app | `http://localhost:3000` em dev, `https://metodogl.site` em prod |
+| `NEXT_PUBLIC_ROOT_DOMAIN` | Domínio base dos subdomínios | `metodogl.site` |
 
 ## Setup do Supabase (passo a passo)
 
@@ -68,7 +68,7 @@ Variáveis necessárias (todas têm placeholder no `.env.example`):
    Isso cria as tabelas `User`, `Mentorado`, `Video`, `VideoCategory`, `PageContent` no seu banco Supabase.
 
 6. **Crie o usuário admin** acessando `http://localhost:3000/api/seed` uma vez após o deploy:
-   - Email: `admin@metodogl.online`
+   - Email: `admin@metodogl.site`
    - Senha: `admin123`
 
 ## Configuração de DNS para subdomínios
@@ -80,20 +80,20 @@ No painel da LocalWeb (ou gerenciador de DNS do domínio), aponte:
 | A | `@` | IP que a Vercel indicar |
 | CNAME | `*` | `cname.vercel-dns.com` |
 
-> Confira os valores exatos na Vercel em **Project → Settings → Domains** ao adicionar `metodogl.online` e `*.metodogl.online`.
+> Confira os valores exatos na Vercel em **Project → Settings → Domains** ao adicionar `metodogl.site` e `*.metodogl.site`.
 
 ## Deploy na Vercel
 
 1. Crie um repositório no GitHub e envie o código.
 2. Importe o projeto na Vercel.
 3. Configure as variáveis de ambiente.
-4. Adicione os domínios `metodogl.online` e `*.metodogl.online`.
+4. Adicione os domínios `metodogl.site` e `*.metodogl.site`.
 5. Aplique as migrations no banco de dados.
 
 ## Estrutura de subdomínios
 
-- Painel: `metodogl.online/admin`
-- Página do mentorado: `slug.metodogl.online`
+- Painel: `metodogl.site/admin`
+- Página do mentorado: `slug.metodogl.site`
 
 ## Licença
 

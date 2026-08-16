@@ -5,7 +5,7 @@ import { getSubdomain } from "@/lib/subdomain";
 import { headers } from "next/headers";
 import { Metadata } from "next";
 
-const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "metodogl.online";
+const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "metodogl.site";
 
 export const dynamic = "force-dynamic";
 

@@ -38,7 +38,7 @@ export default async function AdminDashboard() {
                 <tr key={m.id} className="bg-zinc-950 hover:bg-zinc-900">
                   <td className="px-4 py-3 font-medium">{m.nome}</td>
                   <td className="px-4 py-3 text-zinc-400">
-                    {m.slug}.metodogl.online
+                    {m.slug}.metodogl.site
                   </td>
                   <td className="px-4 py-3">
                     {m.ativo ? (

@@ -9,12 +9,12 @@ export function getSubdomain(host: string | null, rootDomain: string): string | 
     return null;
   }
 
-  // Domínio raiz (ex: metodogl.online ou www.metodogl.online)
+  // Domínio raiz (ex: metodogl.site ou www.metodogl.site)
   if (cleanHost === rootDomain || cleanHost === `www.${rootDomain}`) {
     return null;
   }
 
-  // Subdomínio: joao.metodogl.online
+  // Subdomínio: joao.metodogl.site
   if (cleanHost.endsWith(`.${rootDomain}`)) {
     return cleanHost.replace(`.${rootDomain}`, "");
   }

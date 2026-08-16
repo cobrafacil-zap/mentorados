@@ -184,7 +184,7 @@ export default function MentoradoForm({ mentorado }: MentoradoFormProps) {
             placeholder="ex: joao"
             className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-white focus:border-red-500 focus:outline-none disabled:opacity-50"
           />
-          {form.slug ? <p className="text-xs text-zinc-500">{form.slug}.metodogl.online</p> : null}
+          {form.slug ? <p className="text-xs text-zinc-500">{form.slug}.metodogl.site</p> : null}
         </div>
       </div>
 

@@ -4,6 +4,7 @@ import { LandingPage } from "@/components/LandingPage";
 import { getSubdomain } from "@/lib/subdomain";
 import { headers } from "next/headers";
 import { Metadata } from "next";
+import { supabaseToR2 } from "@/lib/storage-url";
 
 const ROOT_DOMAIN = process.env.NEXT_PUBLIC_ROOT_DOMAIN || "metodogl.site";
 
@@ -36,9 +37,9 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
     title: mentorado.nome,
     icons: mentorado.imagemUrl
       ? {
-          icon: mentorado.imagemUrl,
-          shortcut: mentorado.imagemUrl,
-          apple: mentorado.imagemUrl,
+          icon: supabaseToR2(mentorado.imagemUrl),
+          shortcut: supabaseToR2(mentorado.imagemUrl),
+          apple: supabaseToR2(mentorado.imagemUrl),
         }
       : undefined,
   };

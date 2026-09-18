@@ -1,6 +1,7 @@
 "use client";
 
 import { MetaPixel, MetaPixelNoScript } from "./MetaPixel";
+import { StorageImage } from "./StorageImage";
 
 // Shape local (espelha `model Mentorado` em prisma/schema.prisma).
 // Motivo: importar `Mentorado` de "@prisma/client" faz o bundler
@@ -82,7 +83,7 @@ export function LandingPage({ mentorado }: LandingPageProps) {
 
             {mentorado.imagemUrl ? (
               <div className="flex justify-center py-2">
-                <img
+                <StorageImage
                   src={mentorado.imagemUrl}
                   alt={mentorado.nome}
                   className="h-48 w-48 object-cover"

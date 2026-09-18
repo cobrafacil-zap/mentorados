@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { supabaseToR2 } from "@/lib/storage-url";
 import { VIDEO_CATEGORY_KEYS, videoCategoryLabel } from "@/lib/videoCategories";
 import type { Video, VideoCategory } from "@prisma/client";
 
@@ -573,7 +574,7 @@ function ThumbDropzone({
       {thumbnail ? (
         <div className="flex items-start gap-4">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={thumbnail} alt="" className="h-28 w-48 flex-shrink-0 rounded-md border border-zinc-800 object-cover" />
+          <img src={supabaseToR2(thumbnail)} alt="" className="h-28 w-48 flex-shrink-0 rounded-md border border-zinc-800 object-cover" />
           <div className="flex-1 space-y-2 text-xs">
             <a href={thumbnail} target="_blank" rel="noreferrer" className="block truncate text-zinc-400 hover:text-white">
               {thumbnail}

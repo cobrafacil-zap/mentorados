@@ -1,5 +1,7 @@
 "use client";
 
+import { supabaseToR2 } from "@/lib/storage-url";
+
 // =========================================================
 // VideoCardTracked
 // Igual ao card de vídeo do VideoLibrary, mas:
@@ -41,7 +43,7 @@ export function VideoCardTracked({
         aria-disabled={emAguardo}
       >
         <img
-          src={video.thumbnail}
+          src={supabaseToR2(video.thumbnail)}
           alt=""
           className={`h-full w-full object-cover transition duration-700 ${
             emAguardo ? "" : "group-hover:scale-105"

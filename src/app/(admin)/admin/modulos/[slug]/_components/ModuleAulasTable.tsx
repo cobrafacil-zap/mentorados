@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { supabaseToR2 } from "@/lib/storage-url";
 import type { Video, VideoCategory } from "@prisma/client";
 import { videoCategoryLabel } from "@/lib/videoCategories";
 import type { ModuleDef } from "@/lib/modules";
@@ -429,7 +430,7 @@ export function ModuleAulasTable({
                           >
                             {v.thumbnail ? (
                               /* eslint-disable-next-line @next/next/no-img-element */
-                              <img src={v.thumbnail} alt="" className="h-full w-full object-cover" />
+                              <img src={supabaseToR2(v.thumbnail)} alt="" className="h-full w-full object-cover" />
                             ) : (
                               <div className="flex h-full w-full items-center justify-center text-slate-600">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">

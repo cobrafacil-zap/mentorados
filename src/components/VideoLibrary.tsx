@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { supabaseToR2 } from "@/lib/storage-url";
 import type { VideoItem } from "@/data/videos.example";
 import { MODULES, type ModuleDef } from "@/lib/modules";
 import { useVideoProgress } from "@/hooks/useVideoProgress";
@@ -90,7 +91,7 @@ export function FeaturedVideo({
               >
                 {video.thumbnail && (
                   <img
-                    src={video.thumbnail}
+                    src={supabaseToR2(video.thumbnail)}
                     alt=""
                     className="absolute inset-0 h-full w-full object-cover transition duration-700 group-hover:scale-105"
                   />
@@ -221,7 +222,7 @@ export function VideoLibraryFull({ videos }: { videos: VideoItem[] }) {
             >
               <div className="relative aspect-video w-full overflow-hidden">
                 <img
-                  src={featured.thumbnail}
+                  src={supabaseToR2(featured.thumbnail)}
                   alt=""
                   className="h-full w-full object-cover transition duration-700 group-hover:scale-105"
                 />

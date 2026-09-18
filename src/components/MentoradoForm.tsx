@@ -2,6 +2,7 @@
 
 import { FormEvent, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
+import { supabaseToR2 } from "@/lib/storage-url";
 
 // Shape local (espelha `model Mentorado` em prisma/schema.prisma).
 // Importar de `@prisma/client` trazia o PrismaClient inteiro pro bundle
@@ -278,7 +279,7 @@ export default function MentoradoForm({ mentorado }: MentoradoFormProps) {
         />
         {uploading ? <p className="text-xs text-zinc-400">Enviando...</p> : null}
         {form.imagemUrl ? (
-          <img src={form.imagemUrl} alt="Preview" className="mt-2 h-32 w-32 rounded-lg border border-zinc-700 object-cover" />
+          <img src={supabaseToR2(form.imagemUrl)} alt="Preview" className="mt-2 h-32 w-32 rounded-lg border border-zinc-700 object-cover" />
         ) : null}
       </div>
 

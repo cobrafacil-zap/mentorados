@@ -1,8 +1,7 @@
-import { getSupabaseAdmin } from "./supabase";
+import { uploadToR2, deleteFromR2, getR2PublicUrl } from "./r2";
 
-const BUCKET = "mentorados";
 const MAX_VIDEO_BYTES = 200 * 1024 * 1024; // 200 MB
-const MAX_IMAGE_BYTES = 10 * 1024 * 1024;  // 10 MB
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024; // 10 MB
 
 const VIDEO_MIME_ALLOW = new Set([
   "video/mp4",
@@ -36,13 +35,14 @@ function getExtension(file: File): string {
   return "bin";
 }
 
-function pathFromUrl(url: string, folder: string): string | null {
-  const baseUrl = `${process.env.NEXT_PUBLIC_SUPABASE_URL}/storage/v1/object/public/${BUCKET}/`;
+function pathFromR2Url(url: string, folder: string): string | null {
+  const r2PublicUrl = process.env.NEXT_PUBLIC_R2_PUBLIC_URL;
+  if (!r2PublicUrl) return null;
+
+  const baseUrl = `${r2PublicUrl}/${folder}/`;
   if (!url.startsWith(baseUrl)) return null;
-  const path = url.replace(baseUrl, "");
-  // Só permite deletar dentro da pasta segura
-  if (!path.startsWith(folder)) return null;
-  return path;
+
+  return url.replace(r2PublicUrl + "/", "");
 }
 
 export async function uploadImage(file: File): Promise<string> {
@@ -80,44 +80,30 @@ async function uploadFile(
   folder: string,
   contentType: string
 ): Promise<string> {
-  const supabaseAdmin = getSupabaseAdmin();
   const ext = getExtension(file);
   const fileName = `${randomSuffix()}.${ext}`;
-  const path = `${folder}/${fileName}`;
+  const key = `${folder}/${fileName}`;
 
-  console.log(`[UPLOAD] Enviando ${path} (${file.size} bytes, ${contentType})`);
+  console.log(`[UPLOAD-R2] Enviando ${key} (${file.size} bytes, ${contentType})`);
 
-  const { data, error } = await supabaseAdmin.storage
-    .from(BUCKET)
-    .upload(path, file, {
-      contentType,
-      upsert: false,
-    });
+  const buffer = Buffer.from(await file.arrayBuffer());
+  const url = await uploadToR2(key, buffer, contentType);
 
-  if (error) {
-    console.error("[UPLOAD] Erro do Supabase:", error);
-    throw new Error(`Erro ao enviar arquivo: ${error.message}`);
-  }
-
-  const {
-    data: { publicUrl },
-  } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(data.path);
-
-  return publicUrl;
+  console.log(`[UPLOAD-R2] OK: ${url}`);
+  return url;
 }
 
 export async function deleteImage(url: string): Promise<void> {
-  const path = pathFromUrl(url, "public") ?? pathFromUrl(url, "thumbnails");
+  const path =
+    pathFromR2Url(url, "public") ?? pathFromR2Url(url, "thumbnails");
   if (!path) return;
-  const supabaseAdmin = getSupabaseAdmin();
-  await supabaseAdmin.storage.from(BUCKET).remove([path]);
+  await deleteFromR2(path);
 }
 
 export async function deleteVideo(url: string): Promise<void> {
-  const path = pathFromUrl(url, "videos");
+  const path = pathFromR2Url(url, "videos");
   if (!path) return;
-  const supabaseAdmin = getSupabaseAdmin();
-  await supabaseAdmin.storage.from(BUCKET).remove([path]);
+  await deleteFromR2(path);
 }
 
 export const uploadLimits = {

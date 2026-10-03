@@ -158,9 +158,9 @@ export const DEFAULT_ACHADOS: AchadosConfig = {
     "/templates/achados/oferta-6.jpg",
   ],
   provas: [
-    "/templates/achados/prova-1.jpg",
-    "/templates/achados/prova-2.jpg",
-    "/templates/achados/prova-3.jpg",
+    "/templates/achados/prova-1.png",
+    "/templates/achados/prova-2.png",
+    "/templates/achados/prova-3.png",
   ],
   cupons: [
     "/templates/achados/cupom-1.svg",

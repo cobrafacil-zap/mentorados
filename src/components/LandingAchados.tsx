@@ -255,9 +255,9 @@ export function LandingAchados({ mentorado, config }: LandingAchadosProps) {
         }
       >
         <style>{`
-          .t2-root{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--t2-bg);color:#1a1a1a;margin:0;padding:0;min-height:100vh}
+          .t2-root{font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;background:var(--t2-bg);color:#1a1a1a;margin:0;padding:0;min-height:100vh;overflow-x:clip}
           .t2-root *{box-sizing:border-box;margin:0;padding:0}
-          .t2-hero{background:var(--t2-hero);padding:14px 20px 18px;text-align:center;position:relative;overflow:hidden}
+          .t2-hero{background:var(--t2-hero);padding:14px 20px 18px;text-align:center;position:relative;overflow:hidden;min-height:100vh;min-height:100svh;display:flex;flex-direction:column;justify-content:center}
           .t2-hero:before{content:"";position:absolute;top:-60px;right:-60px;width:220px;height:220px;background:#ffffff47;border-radius:50%;pointer-events:none}
           .t2-hero:after{content:"";position:absolute;bottom:-80px;left:-40px;width:280px;height:280px;background:#00000010;border-radius:50%;pointer-events:none}
           .t2-badge{display:inline-block;background:#00000014;border:1.5px solid #00000020;color:var(--t2-primary);font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;padding:5px 14px;border-radius:50px;margin-bottom:14px;position:relative;z-index:1}
@@ -292,10 +292,10 @@ export function LandingAchados({ mentorado, config }: LandingAchadosProps) {
           .t2-stat{background:#00000010;border:1px solid #00000018;border-radius:10px;padding:6px 12px;text-align:center;color:var(--t2-primary);min-width:80px}
           .t2-stat .num{font-size:17px;font-weight:900;display:block;line-height:1}
           .t2-stat .lbl{font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.04em}
-          .t2-section{padding:26px 0 10px;background:color-mix(in srgb,var(--t2-hero) 12%,var(--t2-bg))}
+          .t2-section{padding:26px 0 10px}
           .t2-sec-title{text-align:center;font-size:20px;font-weight:900;margin-bottom:4px;padding:0 20px}
           .t2-sec-sub{text-align:center;font-size:13px;color:#777;margin-bottom:16px;padding:0 20px}
-          .t2-cupons{padding:28px 0 24px;background:color-mix(in srgb,var(--t2-hero) 18%,var(--t2-cupons))}
+          .t2-cupons{padding:28px 0 24px;background:var(--t2-cupons)}
           .t2-cupons-note{text-align:center;font-size:13px;color:#777;margin-top:14px;padding:0 20px;line-height:1.55}
           .t2-final{background:linear-gradient(160deg,var(--t2-final1),var(--t2-final2));padding:32px 20px 40px;text-align:center}
           .t2-final h2{font-size:22px;font-weight:900;color:var(--t2-primary);margin-bottom:8px;line-height:1.25}

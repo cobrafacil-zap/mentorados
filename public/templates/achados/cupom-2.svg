@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="600" height="240" viewBox="0 0 600 240">
+  <rect x="6" y="6" width="588" height="228" rx="28" fill="#ffffff" stroke="#22265e" stroke-width="5" stroke-dasharray="18 12"/>
+  <rect x="48" y="30" width="150" height="44" rx="22" fill="#ffde59"/>
+  <text x="123" y="60" text-anchor="middle" font-family="Arial,sans-serif" font-size="26" font-weight="900" fill="#22265e">CUPOM</text>
+  <text x="300" y="150" text-anchor="middle" font-family="Arial,sans-serif" font-size="72" font-weight="900" fill="#22265e">40% OFF</text>
+  <text x="300" y="192" text-anchor="middle" font-family="Arial,sans-serif" font-size="26" font-weight="700" fill="#777777">em Smart Home</text>
+</svg>

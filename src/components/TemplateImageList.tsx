@@ -89,7 +89,7 @@ export function TemplateImageList({ label, hint, values, onChange, tall }: Templ
         </div>
       ) : (
         <p className="rounded border border-dashed border-zinc-700 px-3 py-2 text-xs text-zinc-500">
-          Nenhuma imagem — a página exibe um espaço reservado até você adicionar.
+          Nenhuma imagem — ao salvar, a página usa as imagens padrão do template.
         </p>
       )}
 

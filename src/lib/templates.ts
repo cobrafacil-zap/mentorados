@@ -107,8 +107,8 @@ export interface AchadosConfig {
 export const DEFAULT_ACHADOS: AchadosConfig = {
   heroBadge: "● Vagas abertas hoje",
   heroTituloAntes: "As melhores ofertas do",
-  heroLogoUrl: "",
-  heroLogoAlt: "Mercado Livre",
+  heroLogoUrl: "/templates/achados/logo.svg",
+  heroLogoAlt: "Achados na Promo",
   heroTituloDepois: "chegam direto no seu WhatsApp",
   heroSubtitulo:
     "Entre no grupo gratuito e receba promoções imperdíveis todos os dias, antes de todo mundo!",
@@ -149,9 +149,27 @@ export const DEFAULT_ACHADOS: AchadosConfig = {
   overlayBenefit2: "📦 Ofertas todo dia",
   overlayBenefit3: "⚡ Antes de todo mundo",
 
-  ofertas: [],
-  provas: [],
-  cupons: [],
+  ofertas: [
+    "/templates/achados/oferta-1.jpg",
+    "/templates/achados/oferta-2.jpg",
+    "/templates/achados/oferta-3.jpg",
+    "/templates/achados/oferta-4.jpg",
+    "/templates/achados/oferta-5.jpg",
+    "/templates/achados/oferta-6.jpg",
+  ],
+  provas: [
+    "/templates/achados/prova-1.jpg",
+    "/templates/achados/prova-2.jpg",
+    "/templates/achados/prova-3.jpg",
+  ],
+  cupons: [
+    "/templates/achados/cupom-1.svg",
+    "/templates/achados/cupom-2.svg",
+    "/templates/achados/cupom-3.svg",
+    "/templates/achados/cupom-4.svg",
+    "/templates/achados/cupom-5.svg",
+    "/templates/achados/cupom-6.svg",
+  ],
 
   footerMarca: "Achados na Promo",
   footerSub: "Curadoria de cupons e promoções do Mercado Livre",
@@ -193,6 +211,11 @@ export function getAchadosConfig(raw: unknown): AchadosConfig {
       ? Math.min(100, Math.max(0, Math.round(c.vagasPercent as number)))
       : DEFAULT_ACHADOS.vagasPercent;
 
+  // Listas vazias voltam para as imagens padrão (a LP nunca fica vazia).
+  const ofertas = asStringArray(c.ofertas);
+  const provas = asStringArray(c.provas);
+  const cupons = asStringArray(c.cupons);
+
   return {
     ...DEFAULT_ACHADOS,
     ...Object.fromEntries(
@@ -201,8 +224,8 @@ export function getAchadosConfig(raw: unknown): AchadosConfig {
         .map((k) => [k, pick(k, DEFAULT_ACHADOS[k] as string)])
     ),
     vagasPercent: vagas,
-    ofertas: asStringArray(c.ofertas),
-    provas: asStringArray(c.provas),
-    cupons: asStringArray(c.cupons),
+    ofertas: ofertas.length > 0 ? ofertas : [...DEFAULT_ACHADOS.ofertas],
+    provas: provas.length > 0 ? provas : [...DEFAULT_ACHADOS.provas],
+    cupons: cupons.length > 0 ? cupons : [...DEFAULT_ACHADOS.cupons],
   } as AchadosConfig;
 }

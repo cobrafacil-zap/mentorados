@@ -35,7 +35,6 @@ function Carousel({
   const [active, setActive] = useState(0);
   const pausedRef = useRef(false);
   const resumeTimer = useRef<number | null>(null);
-  const dragRef = useRef<{ x: number; left: number; moved: boolean } | null>(null);
 
   // Itens triplicados (clone | real | clone), igual à referência:
   // permite o loop infinito sem "pulo" visível.
@@ -86,11 +85,14 @@ function Carousel({
     return () => clearTimeout(t);
   }, [count, centerCard]);
 
-  // Scroll: atualiza dots + reposiciona silenciosamente nas bordas (loop)
+  // Scroll: atualiza dots + reposiciona silenciosamente nas bordas (loop).
+  // Só atua quando o conteúdo realmente transborda a tela.
   useEffect(() => {
     const track = trackRef.current;
     if (!track || count <= 1) return;
+    const hasOverflow = () => track.scrollWidth > track.clientWidth + 10;
     const onScroll = () => {
+      if (!hasOverflow()) return;
       const total = track.scrollWidth;
       const setW = total / 3;
       if (track.scrollLeft < setW * 0.25) {
@@ -108,13 +110,13 @@ function Carousel({
     return () => track.removeEventListener("scroll", onScroll);
   }, [count, nearestIndex]);
 
-  // Autoplay que pausa quando o usuário interage
+  // Autoplay que pausa quando o usuário interage (só com overflow real)
   useEffect(() => {
     if (count <= 1) return;
     const timer = setInterval(() => {
       if (pausedRef.current || document.hidden) return;
       const track = trackRef.current;
-      if (!track) return;
+      if (!track || track.scrollWidth <= track.clientWidth + 10) return;
       const best = nearestIndex();
       if (best < 0) return;
       const cards = track.querySelectorAll("[data-card]");
@@ -152,25 +154,6 @@ function Carousel({
     [count, centerCard, pause]
   );
 
-  // Arrastar com o mouse (desktop)
-  const onMouseDown = (e: React.MouseEvent) => {
-    const track = trackRef.current;
-    if (!track) return;
-    pause();
-    dragRef.current = { x: e.clientX, left: track.scrollLeft, moved: false };
-  };
-  const onMouseMove = (e: React.MouseEvent) => {
-    const drag = dragRef.current;
-    const track = trackRef.current;
-    if (!drag || !track) return;
-    const dx = e.clientX - drag.x;
-    if (Math.abs(dx) > 5) drag.moved = true;
-    if (drag.moved) track.scrollLeft = drag.left - dx;
-  };
-  const endDrag = () => {
-    dragRef.current = null;
-  };
-
   if (count === 0) return null;
 
   return (
@@ -181,10 +164,7 @@ function Carousel({
         style={{ ["--t2-card" as string]: cardMin }}
         onPointerDown={pause}
         onWheel={pause}
-        onMouseDown={onMouseDown}
-        onMouseMove={onMouseMove}
-        onMouseUp={endDrag}
-        onMouseLeave={endDrag}
+        onMouseEnter={pause}
       >
         {tripled}
       </div>
@@ -285,8 +265,7 @@ export function LandingAchados({ mentorado, config }: LandingAchadosProps) {
           .t2-hero-logo{display:block;max-height:28px;width:auto;margin:6px auto}
           .t2-hero-logo-fallback{display:block;font-size:22px;font-weight:900;letter-spacing:.04em;color:var(--t2-primary);margin:4px 0}
           .t2-hero p.t2-sub{font-size:13.5px;color:var(--t2-hero-sub);opacity:.75;line-height:1.45;max-width:340px;margin:0 auto 10px;position:relative;z-index:1}
-          .t2-track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:6px 24px 10px;scroll-behavior:smooth;cursor:grab}
-          .t2-track:active{cursor:grabbing}
+          .t2-track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:6px 24px 10px}
           .t2-track img{pointer-events:none;user-select:none;-webkit-user-select:none}
           .t2-track::-webkit-scrollbar{display:none}
           .t2-track [data-card]{scroll-snap-align:center;flex:0 0 var(--t2-card,178px)}
@@ -313,10 +292,10 @@ export function LandingAchados({ mentorado, config }: LandingAchadosProps) {
           .t2-stat{background:#00000010;border:1px solid #00000018;border-radius:10px;padding:6px 12px;text-align:center;color:var(--t2-primary);min-width:80px}
           .t2-stat .num{font-size:17px;font-weight:900;display:block;line-height:1}
           .t2-stat .lbl{font-size:9px;opacity:.75;text-transform:uppercase;letter-spacing:.04em}
-          .t2-section{padding:26px 0 10px}
+          .t2-section{padding:26px 0 10px;background:color-mix(in srgb,var(--t2-hero) 12%,var(--t2-bg))}
           .t2-sec-title{text-align:center;font-size:20px;font-weight:900;margin-bottom:4px;padding:0 20px}
           .t2-sec-sub{text-align:center;font-size:13px;color:#777;margin-bottom:16px;padding:0 20px}
-          .t2-cupons{padding:28px 0 24px;background:var(--t2-cupons)}
+          .t2-cupons{padding:28px 0 24px;background:color-mix(in srgb,var(--t2-hero) 18%,var(--t2-cupons))}
           .t2-cupons-note{text-align:center;font-size:13px;color:#777;margin-top:14px;padding:0 20px;line-height:1.55}
           .t2-final{background:linear-gradient(160deg,var(--t2-final1),var(--t2-final2));padding:32px 20px 40px;text-align:center}
           .t2-final h2{font-size:22px;font-weight:900;color:var(--t2-primary);margin-bottom:8px;line-height:1.25}

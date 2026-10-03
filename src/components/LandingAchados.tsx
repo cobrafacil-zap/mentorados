@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, Children, Fragment } from "react";
 import { MetaPixel, MetaPixelNoScript } from "./MetaPixel";
 import { StorageImage } from "./StorageImage";
 import { supabaseToR2 } from "@/lib/storage-url";
@@ -33,65 +33,160 @@ function Carousel({
 }) {
   const trackRef = useRef<HTMLDivElement>(null);
   const [active, setActive] = useState(0);
+  const pausedRef = useRef(false);
+  const resumeTimer = useRef<number | null>(null);
+  const dragRef = useRef<{ x: number; left: number; moved: boolean } | null>(null);
 
-  const goTo = useCallback((index: number) => {
+  // Itens triplicados (clone | real | clone), igual à referência:
+  // permite o loop infinito sem "pulo" visível.
+  const items = Children.toArray(children);
+  const tripled = [0, 1, 2].flatMap((copy) =>
+    items.map((child, i) => <Fragment key={`${copy}-${i}`}>{child}</Fragment>)
+  );
+
+  const centerCard = useCallback((el: HTMLElement, smooth: boolean) => {
     const track = trackRef.current;
     if (!track) return;
-    const cards = track.querySelectorAll("[data-card]");
-    const el = cards[index] as HTMLElement | undefined;
-    if (el) {
-      track.scrollTo({ left: el.offsetLeft - track.clientWidth / 2 + el.clientWidth / 2, behavior: "smooth" });
-    }
-    setActive(index);
+    track.scrollTo({
+      left: el.offsetLeft - track.clientWidth / 2 + el.clientWidth / 2,
+      behavior: smooth ? "smooth" : "auto",
+    });
   }, []);
 
+  const nearestIndex = useCallback(() => {
+    const track = trackRef.current;
+    if (!track) return -1;
+    const cards = track.querySelectorAll("[data-card]");
+    if (!cards.length) return -1;
+    const center = track.scrollLeft + track.clientWidth / 2;
+    let best = 0;
+    let bestDist = Infinity;
+    cards.forEach((el, i) => {
+      const h = el as HTMLElement;
+      const c = h.offsetLeft + h.clientWidth / 2;
+      const dist = Math.abs(c - center);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = i;
+      }
+    });
+    return best;
+  }, []);
+
+  // Começa no bloco do meio (o "real")
+  useEffect(() => {
+    if (count <= 1) return;
+    const track = trackRef.current;
+    if (!track) return;
+    const t = setTimeout(() => {
+      const cards = track.querySelectorAll("[data-card]");
+      const el = cards[count] as HTMLElement | undefined;
+      if (el) centerCard(el, false);
+    }, 50);
+    return () => clearTimeout(t);
+  }, [count, centerCard]);
+
+  // Scroll: atualiza dots + reposiciona silenciosamente nas bordas (loop)
   useEffect(() => {
     const track = trackRef.current;
     if (!track || count <= 1) return;
     const onScroll = () => {
-      const cards = Array.from(track.querySelectorAll("[data-card]")) as HTMLElement[];
-      if (cards.length === 0) return;
-      const center = track.scrollLeft + track.clientWidth / 2;
-      let best = 0;
-      let bestDist = Infinity;
-      cards.forEach((el, i) => {
-        const c = el.offsetLeft + el.clientWidth / 2;
-        const d = Math.abs(c - center);
-        if (d < bestDist) {
-          bestDist = d;
-          best = i % count;
-        }
-      });
-      setActive(best);
+      const total = track.scrollWidth;
+      const setW = total / 3;
+      if (track.scrollLeft < setW * 0.25) {
+        track.scrollLeft += setW;
+        return;
+      }
+      if (track.scrollLeft + track.clientWidth > total - setW * 0.25) {
+        track.scrollLeft -= setW;
+        return;
+      }
+      const best = nearestIndex();
+      if (best >= 0) setActive(best % count);
     };
     track.addEventListener("scroll", onScroll, { passive: true });
+    return () => track.removeEventListener("scroll", onScroll);
+  }, [count, nearestIndex]);
+
+  // Autoplay que pausa quando o usuário interage
+  useEffect(() => {
+    if (count <= 1) return;
     const timer = setInterval(() => {
-      setActive((prev) => {
-        const next = (prev + 1) % count;
-        const trackEl = trackRef.current;
-        const cards = trackEl?.querySelectorAll("[data-card]");
-        const el = cards?.[next] as HTMLElement | undefined;
-        if (el && trackEl) {
-          trackEl.scrollTo({
-            left: el.offsetLeft - trackEl.clientWidth / 2 + el.clientWidth / 2,
-            behavior: "smooth",
-          });
-        }
-        return next;
-      });
+      if (pausedRef.current || document.hidden) return;
+      const track = trackRef.current;
+      if (!track) return;
+      const best = nearestIndex();
+      if (best < 0) return;
+      const cards = track.querySelectorAll("[data-card]");
+      const el = (cards[best + 1] ?? cards[count]) as HTMLElement | undefined;
+      if (el) centerCard(el, true);
     }, 3500);
-    return () => {
-      track.removeEventListener("scroll", onScroll);
-      clearInterval(timer);
-    };
-  }, [count]);
+    return () => clearInterval(timer);
+  }, [count, nearestIndex, centerCard]);
+
+  useEffect(
+    () => () => {
+      if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+    },
+    []
+  );
+
+  const pause = useCallback(() => {
+    pausedRef.current = true;
+    if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+    resumeTimer.current = window.setTimeout(() => {
+      pausedRef.current = false;
+    }, 5000);
+  }, []);
+
+  const goTo = useCallback(
+    (index: number) => {
+      pause();
+      const track = trackRef.current;
+      if (!track) return;
+      const cards = track.querySelectorAll("[data-card]");
+      const el = cards[count + index] as HTMLElement | undefined;
+      if (el) centerCard(el, true);
+      setActive(index);
+    },
+    [count, centerCard, pause]
+  );
+
+  // Arrastar com o mouse (desktop)
+  const onMouseDown = (e: React.MouseEvent) => {
+    const track = trackRef.current;
+    if (!track) return;
+    pause();
+    dragRef.current = { x: e.clientX, left: track.scrollLeft, moved: false };
+  };
+  const onMouseMove = (e: React.MouseEvent) => {
+    const drag = dragRef.current;
+    const track = trackRef.current;
+    if (!drag || !track) return;
+    const dx = e.clientX - drag.x;
+    if (Math.abs(dx) > 5) drag.moved = true;
+    if (drag.moved) track.scrollLeft = drag.left - dx;
+  };
+  const endDrag = () => {
+    dragRef.current = null;
+  };
 
   if (count === 0) return null;
 
   return (
     <div>
-      <div ref={trackRef} className="t2-track" style={{ ["--t2-card" as string]: cardMin }}>
-        {children}
+      <div
+        ref={trackRef}
+        className="t2-track"
+        style={{ ["--t2-card" as string]: cardMin }}
+        onPointerDown={pause}
+        onWheel={pause}
+        onMouseDown={onMouseDown}
+        onMouseMove={onMouseMove}
+        onMouseUp={endDrag}
+        onMouseLeave={endDrag}
+      >
+        {tripled}
       </div>
       <div className="t2-dots" role="tablist" aria-label={id}>
         {Array.from({ length: count }).map((_, i) => (
@@ -190,7 +285,9 @@ export function LandingAchados({ mentorado, config }: LandingAchadosProps) {
           .t2-hero-logo{display:block;max-height:28px;width:auto;margin:6px auto}
           .t2-hero-logo-fallback{display:block;font-size:22px;font-weight:900;letter-spacing:.04em;color:var(--t2-primary);margin:4px 0}
           .t2-hero p.t2-sub{font-size:13.5px;color:var(--t2-hero-sub);opacity:.75;line-height:1.45;max-width:340px;margin:0 auto 10px;position:relative;z-index:1}
-          .t2-track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:6px 24px 10px;scroll-behavior:smooth}
+          .t2-track{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:6px 24px 10px;scroll-behavior:smooth;cursor:grab}
+          .t2-track:active{cursor:grabbing}
+          .t2-track img{pointer-events:none;user-select:none;-webkit-user-select:none}
           .t2-track::-webkit-scrollbar{display:none}
           .t2-track [data-card]{scroll-snap-align:center;flex:0 0 var(--t2-card,178px)}
           .t2-card{border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.12);border:1.5px solid #161616;background:#161616;aspect-ratio:7/10;max-width:178px;width:100%}

@@ -28,6 +28,7 @@ export default async function AdminDashboard() {
               <tr>
                 <th className="px-4 py-3">Nome</th>
                 <th className="px-4 py-3">Slug / Subdomínio</th>
+                <th className="px-4 py-3">Template</th>
                 <th className="px-4 py-3">Status</th>
                 <th className="px-4 py-3">Pixel</th>
                 <th className="px-4 py-3 text-right">Ações</th>
@@ -39,6 +40,9 @@ export default async function AdminDashboard() {
                   <td className="px-4 py-3 font-medium">{m.nome}</td>
                   <td className="px-4 py-3 text-zinc-400">
                     {m.slug}.metodogl.site
+                  </td>
+                  <td className="px-4 py-3 text-zinc-400">
+                    {(m as { template?: string }).template === "achados" ? "Achados" : "Clássico"}
                   </td>
                   <td className="px-4 py-3">
                     {m.ativo ? (

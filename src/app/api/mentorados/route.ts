@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../auth/[...nextauth]/authOptions";
 import { prisma } from "@/lib/prisma";
 import { isValidSlug } from "@/lib/subdomain";
+import { isValidTemplate } from "@/lib/templates";
 
 export async function GET() {
   const session = await getServerSession(authOptions);
@@ -34,6 +35,8 @@ export async function POST(request: NextRequest) {
         slug,
         nome: body.nome,
         ativo: body.ativo ?? true,
+        template: isValidTemplate(body.template) ? body.template : "classico",
+        templateConfig: body.templateConfig ?? undefined,
         tituloHero: body.tituloHero,
         tituloSecao: body.tituloSecao,
         texto1: body.texto1,

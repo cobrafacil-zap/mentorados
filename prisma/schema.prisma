@@ -42,6 +42,11 @@ model Mentorado {
 
   pixelId         String?
 
+  // Template da página do mentorado ("classico" = original, "achados" = réplica Achados na Promo).
+  // `templateConfig` guarda textos/cores/listas específicos do template (JSON).
+  template        String  @default("classico")
+  templateConfig  Json?
+
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 }

@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { LandingPage } from "@/components/LandingPage";
+import { LandingAchados } from "@/components/LandingAchados";
+import { getAchadosConfig } from "@/lib/templates";
 import { getSubdomain } from "@/lib/subdomain";
 import { headers } from "next/headers";
 import { Metadata } from "next";
@@ -59,6 +61,15 @@ export default async function MentoradoPage({ params }: PageProps) {
 
   if (!mentorado) {
     notFound();
+  }
+
+  if ((mentorado as { template?: string }).template === "achados") {
+    return (
+      <LandingAchados
+        mentorado={mentorado}
+        config={getAchadosConfig((mentorado as { templateConfig?: unknown }).templateConfig)}
+      />
+    );
   }
 
   return <LandingPage mentorado={mentorado} />;

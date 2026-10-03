@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth/next";
 import { authOptions } from "../../auth/[...nextauth]/authOptions";
 import { prisma } from "@/lib/prisma";
 import { deleteImage } from "@/lib/upload";
+import { isValidTemplate } from "@/lib/templates";
 
 interface RouteContext {
   params: Promise<{ id: string }>;
@@ -36,6 +37,8 @@ export async function PUT(request: NextRequest, context: RouteContext) {
       data: {
         nome: body.nome,
         ativo: body.ativo,
+        ...(isValidTemplate(body.template) ? { template: body.template } : {}),
+        ...(body.templateConfig !== undefined ? { templateConfig: body.templateConfig } : {}),
         tituloHero: body.tituloHero,
         tituloSecao: body.tituloSecao,
         texto1: body.texto1,

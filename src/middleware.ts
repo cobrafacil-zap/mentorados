@@ -8,6 +8,13 @@ export function middleware(request: NextRequest) {
   const host = request.headers.get("host") || "";
   const pathname = request.nextUrl.pathname;
 
+  // Arquivos estáticos do public/ (/templates/*, /icon.svg etc.) nunca
+  // caem no slug do mentorado — slugs válidos não contêm ponto.
+  const lastSegment = pathname.split("/").pop() || "";
+  if (lastSegment.includes(".")) {
+    return NextResponse.next();
+  }
+
   // Só processa subdomínios quando o host termina com o domínio raiz
   if (!host.endsWith(`.${ROOT_DOMAIN}`) && host !== `www.${ROOT_DOMAIN}`) {
     return NextResponse.next();

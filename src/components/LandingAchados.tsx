@@ -270,11 +270,11 @@ export function LandingAchados({ mentorado, config }: LandingAchadosProps) {
           .t2-track::-webkit-scrollbar{display:none}
           .t2-track [data-card]{scroll-snap-align:center;flex:0 0 var(--t2-card,178px)}
           .t2-card{border-radius:16px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.12);border:1.5px solid #161616;background:#161616;aspect-ratio:7/10;max-width:178px;width:100%}
-          .t2-card img{width:100%;height:100%;object-fit:cover;display:block}
+          .t2-card img{width:100%;height:100%;object-fit:contain;display:block}
           .t2-card-cupom{border-radius:14px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,.1);border:1.5px solid #f0e8df;background:#fff;aspect-ratio:5/2;max-width:290px;width:100%}
           .t2-card-cupom img{width:100%;height:100%;object-fit:contain;display:block}
           .t2-card-prova{border-radius:18px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.15);border:1.5px solid #e0e0e0;background:#111;aspect-ratio:9/16;max-width:240px;width:100%}
-          .t2-card-prova img{width:100%;height:100%;object-fit:cover;display:block}
+          .t2-card-prova img{width:100%;height:100%;object-fit:contain;display:block}
           .t2-ph{border-radius:16px;border:2px dashed #00000025;background:#ffffff80;min-height:220px;display:flex;flex-direction:column;gap:8px;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#00000070;padding:16px;text-align:center;max-width:178px;width:100%}
           .t2-ph.tall{min-height:300px;max-width:240px}
           .t2-ph-emoji{font-size:34px}

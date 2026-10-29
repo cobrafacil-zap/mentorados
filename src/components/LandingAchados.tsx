@@ -35,6 +35,7 @@ function Carousel({
   const [active, setActive] = useState(0);
   const pausedRef = useRef(false);
   const resumeTimer = useRef<number | null>(null);
+  const wrapFallback = useRef<number | null>(null);
 
   // Itens triplicados (clone | real | clone), igual à referência:
   // permite o loop infinito sem "pulo" visível.
@@ -42,15 +43,6 @@ function Carousel({
   const tripled = [0, 1, 2].flatMap((copy) =>
     items.map((child, i) => <Fragment key={`${copy}-${i}`}>{child}</Fragment>)
   );
-
-  const centerCard = useCallback((el: HTMLElement, smooth: boolean) => {
-    const track = trackRef.current;
-    if (!track) return;
-    track.scrollTo({
-      left: el.offsetLeft - track.clientWidth / 2 + el.clientWidth / 2,
-      behavior: smooth ? "smooth" : "auto",
-    });
-  }, []);
 
   const nearestIndex = useCallback(() => {
     const track = trackRef.current;
@@ -72,6 +64,50 @@ function Carousel({
     return best;
   }, []);
 
+  // Loop infinito: reposiciona para o bloco do meio quando a trilha encosta
+  // numa das bordas. IMPORTANTE: usa scroll JÁ INSTANTÂNEO (auto) e só roda
+  // quando NENHUMA animação smooth está em voo (garantido pelo scrollend /
+  // fallback abaixo). Antes era chamado no meio do smooth, pulado a posição,
+  // gerando um novo evento de scroll e entrando em loop acelerado infinito.
+  const wrapIfNeeded = useCallback(() => {
+    const track = trackRef.current;
+    if (!track) return;
+    const total = track.scrollWidth;
+    if (total <= track.clientWidth + 10) return;
+    const setW = total / 3;
+    let jumped = false;
+    if (track.scrollLeft < setW * 0.25) {
+      track.scrollTo({ left: track.scrollLeft + setW, behavior: "auto" });
+      jumped = true;
+    } else if (track.scrollLeft + track.clientWidth > total - setW * 0.25) {
+      track.scrollTo({ left: track.scrollLeft - setW, behavior: "auto" });
+      jumped = true;
+    }
+    const best = nearestIndex();
+    if (best >= 0) setActive(best % count);
+    return jumped;
+  }, [nearestIndex, count]);
+
+  const centerCard = useCallback(
+    (el: HTMLElement, smooth: boolean) => {
+      const track = trackRef.current;
+      if (!track) return;
+      track.scrollTo({
+        left: el.offsetLeft - track.clientWidth / 2 + el.clientWidth / 2,
+        behavior: smooth ? "smooth" : "auto",
+      });
+      if (smooth) {
+        // Fallback p/ navegadores sem `scrollend`: após a animação assentar,
+        // aplica o wrap de forma segura (fora do voo do smooth).
+        if (wrapFallback.current) window.clearTimeout(wrapFallback.current);
+        wrapFallback.current = window.setTimeout(() => {
+          wrapIfNeeded();
+        }, 650);
+      }
+    },
+    [wrapIfNeeded]
+  );
+
   // Começa no bloco do meio (o "real")
   useEffect(() => {
     if (count <= 1) return;
@@ -85,30 +121,25 @@ function Carousel({
     return () => clearTimeout(t);
   }, [count, centerCard]);
 
-  // Scroll: atualiza dots + reposiciona silenciosamente nas bordas (loop).
-  // Só atua quando o conteúdo realmente transborda a tela.
+  // Scroll: só atualiza o dot ativo. O teleport de loop acontece no `scrollend`
+  // (e no fallback do centerCard) — nunca durante uma animação smooth.
   useEffect(() => {
     const track = trackRef.current;
     if (!track || count <= 1) return;
-    const hasOverflow = () => track.scrollWidth > track.clientWidth + 10;
     const onScroll = () => {
-      if (!hasOverflow()) return;
-      const total = track.scrollWidth;
-      const setW = total / 3;
-      if (track.scrollLeft < setW * 0.25) {
-        track.scrollLeft += setW;
-        return;
-      }
-      if (track.scrollLeft + track.clientWidth > total - setW * 0.25) {
-        track.scrollLeft -= setW;
-        return;
-      }
       const best = nearestIndex();
       if (best >= 0) setActive(best % count);
     };
+    const onScrollEnd = () => {
+      wrapIfNeeded();
+    };
     track.addEventListener("scroll", onScroll, { passive: true });
-    return () => track.removeEventListener("scroll", onScroll);
-  }, [count, nearestIndex]);
+    track.addEventListener("scrollend", onScrollEnd);
+    return () => {
+      track.removeEventListener("scroll", onScroll);
+      track.removeEventListener("scrollend", onScrollEnd);
+    };
+  }, [count, nearestIndex, wrapIfNeeded]);
 
   // Autoplay que pausa quando o usuário interage (só com overflow real)
   useEffect(() => {
@@ -129,6 +160,7 @@ function Carousel({
   useEffect(
     () => () => {
       if (resumeTimer.current) window.clearTimeout(resumeTimer.current);
+      if (wrapFallback.current) window.clearTimeout(wrapFallback.current);
     },
     []
   );

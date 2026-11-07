@@ -230,7 +230,7 @@ export function LandingPromo({
 
       <div className="promo-root" style={rootStyle as never}>
         <div className="promo-urgencia">
-          <i className="fas fa-exclamation-circle"></i>
+          <span className="promo-urgencia-icon">!</span>
           {config.urgenciaTexto}
         </div>
 

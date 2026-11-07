@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { MetaPixel, MetaPixelNoScript } from "./MetaPixel";
 import { StorageImage } from "./StorageImage";
 import "./LandingPromo.css";
@@ -111,6 +111,10 @@ export function LandingPromo({
   const [countdown, setCountdown] = useState(3);
   const [spots, setSpots] = useState(config.spotsIniciais);
   const [copied, setCopied] = useState(false);
+  // Ref sincronizada com o valor atual das vagas. O guard usa a ref (não o
+  // estado) para nunca deixar o contador cair abaixo de `spotsMinimo`, mesmo
+  // quando vários timers/renders se sobrepõem.
+  const spotsRef = useRef(config.spotsIniciais);
 
   const openOverlay = useCallback(() => {
     setCountdown(3);
@@ -151,52 +155,58 @@ export function LandingPromo({
     ];
 
     function triggerEvent() {
-      if (spots > config.spotsMinimo) {
-        setSpots((prev) => {
-          const next = prev - 1;
-          const el = document.getElementById("promo-spots-count");
-          if (el) {
-            el.style.color = "#FF0000";
-            setTimeout(() => {
-              el.style.color = config.corTexto;
-            }, 500);
-          }
-          const name = names[Math.floor(Math.random() * names.length)];
-          const city = cities[Math.floor(Math.random() * cities.length)];
-          const div = document.createElement("div");
-          div.className = "promo-toast";
+      // Guard com a ref: NUNCA deixa as vagas caírem abaixo do mínimo.
+      if (spotsRef.current <= config.spotsMinimo) return;
 
-          const icon = document.createElement("i");
-          icon.className = "fas fa-check-circle";
-          icon.style.color = config.corDestaque;
-          icon.style.fontSize = "16px";
+      spotsRef.current -= 1;
+      const next = spotsRef.current;
+      setSpots(next);
 
-          const textDiv = document.createElement("div");
-          const strong = document.createElement("strong");
-          strong.textContent = name;
-          const rest = document.createTextNode(` de ${city} entrou no grupo.`);
-          textDiv.appendChild(strong);
-          textDiv.appendChild(rest);
-
-          div.appendChild(icon);
-          div.appendChild(textDiv);
-          document.body.appendChild(div);
-          requestAnimationFrame(() => div.classList.add("show"));
-          setTimeout(() => {
-            div.classList.remove("show");
-            setTimeout(() => div.remove(), 500);
-          }, 1800);
-          return next;
-        });
+      const el = document.getElementById("promo-spots-count");
+      if (el) {
+        el.style.color = "#FF0000";
+        setTimeout(() => {
+          el.style.color = config.corTexto;
+        }, 500);
       }
+
+      const name = names[Math.floor(Math.random() * names.length)];
+      const city = cities[Math.floor(Math.random() * cities.length)];
+      const div = document.createElement("div");
+      div.className = "promo-toast";
+
+      const icon = document.createElement("i");
+      icon.className = "fas fa-check-circle";
+      icon.style.color = "#f45b8c";
+      icon.style.fontSize = "16px";
+
+      const textDiv = document.createElement("div");
+      const strong = document.createElement("strong");
+      strong.textContent = name;
+      const rest = document.createTextNode(` de ${city} entrou no grupo.`);
+      textDiv.appendChild(strong);
+      textDiv.appendChild(rest);
+
+      div.appendChild(icon);
+      div.appendChild(textDiv);
+      document.body.appendChild(div);
+      requestAnimationFrame(() => div.classList.add("show"));
+      setTimeout(() => {
+        div.classList.remove("show");
+        setTimeout(() => div.remove(), 500);
+      }, 1800);
     }
 
+    // Um único timer — nunca acumula intervalos.
     const t0 = setTimeout(() => {
       triggerEvent();
-      setInterval(triggerEvent, 2000);
     }, 2000);
-    return () => clearTimeout(t0);
-  }, [spots, config]);
+    const interval = setInterval(triggerEvent, 2000);
+    return () => {
+      clearTimeout(t0);
+      clearInterval(interval);
+    };
+  }, [config]);
 
   useEffect(() => {
     if (!overlayOpen) return;

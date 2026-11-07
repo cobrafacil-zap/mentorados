@@ -450,19 +450,24 @@
   width: 90%;
   max-width: 380px;
   background: #fff;
-  color: var(--promo-texto);
+  color: #000 !important;
   padding: 12px 18px;
   border-radius: 50px;
-  box-shadow: 0 10px 30px rgba(107, 79, 79, 0.15);
+  box-shadow: 0 10px 30px rgba(107, 79, 79, 0.25);
   display: flex;
   align-items: center;
   gap: 12px;
-  font-size: 12px;
+  font-size: 13px;
+  font-weight: 700;
   z-index: 1500;
   animation: promoSlideUp 0.5s ease-out;
-  border: 1px solid var(--promo-destaque);
+  border: 1px solid #f45b8c;
   opacity: 0;
   pointer-events: none;
+}
+.promo-toast strong {
+  color: #000 !important;
+  font-weight: 900;
 }
 .promo-toast.show {
   opacity: 1;

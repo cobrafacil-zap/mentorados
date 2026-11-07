@@ -3,7 +3,7 @@
 import { FormEvent, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { supabaseToR2 } from "@/lib/storage-url";
-import { TEMPLATES, DEFAULT_ACHADOS, getAchadosConfig, isValidTemplate, type AchadosConfig } from "@/lib/templates";
+import { TEMPLATES, DEFAULT_ACHADOS, DEFAULT_PROMO, getAchadosConfig, getPromoConfig, isValidTemplate, type AchadosConfig, type PromoConfig } from "@/lib/templates";
 import { TemplateImageList } from "./TemplateImageList";
 
 // Shape local (espelha `model Mentorado` em prisma/schema.prisma).
@@ -186,6 +186,9 @@ export default function MentoradoForm({ mentorado }: MentoradoFormProps) {
   const [achados, setAchados] = useState<AchadosConfig>(() =>
     getAchadosConfig(mentorado?.templateConfig)
   );
+  const [promo, setPromo] = useState<PromoConfig>(() =>
+    getPromoConfig(mentorado?.templateConfig)
+  );
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [uploading, setUploading] = useState(false);
@@ -249,7 +252,12 @@ export default function MentoradoForm({ mentorado }: MentoradoFormProps) {
       slug: form.slug.toLowerCase().trim().replace(/\s+/g, "-"),
       template,
       // Preserva config ao voltar pro clássico (API ignora undefined no PUT)
-      templateConfig: template === "achados" ? achados : undefined,
+      templateConfig:
+        template === "achados" || template === "promo"
+          ? template === "achados"
+            ? achados
+            : promo
+          : undefined,
     };
 
     const url = isEditing ? `/api/mentorados/${mentorado!.id}` : "/api/mentorados";
@@ -454,7 +462,7 @@ export default function MentoradoForm({ mentorado }: MentoradoFormProps) {
             ) : null}
           </div>
         </>
-      ) : (
+      ) : template === "achados" ? (
         <>
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-semibold">Conteúdo do template Achados</h3>
@@ -580,6 +588,152 @@ export default function MentoradoForm({ mentorado }: MentoradoFormProps) {
             {uploading ? <p className="text-xs text-zinc-400">Enviando...</p> : null}
             {form.imagemUrl ? (
               <img src={supabaseToR2(form.imagemUrl)} alt="Preview" className="mt-2 h-32 w-32 rounded-lg border border-zinc-700 object-cover" />
+            ) : null}
+          </div>
+        </>
+      ) : (
+        <>
+          {/* Promo Te Quero config */}
+          <div className="space-y-4 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4">
+            <h3 className="text-lg font-semibold">Conteúdo do template Promo</h3>
+            <button
+              type="button"
+              onClick={() => setPromo(DEFAULT_PROMO)}
+              className="rounded bg-zinc-800 px-3 py-1 text-xs text-white hover:bg-zinc-700"
+            >
+              Restaurar padrões
+            </button>
+          </div>
+
+          {/* Cores */}
+          <div className="space-y-4 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4">
+            <h4 className="font-medium text-zinc-200">Cores</h4>
+            <div className="grid gap-3 md:grid-cols-2">
+              {[
+                { name: "corUrgencia", label: "Barra de urgência" },
+                { name: "corDestaque", label: "Destaque / título" },
+                { name: "corBotao", label: "Botão CTA" },
+                { name: "corBotaoHover", label: "Botão CTA hover" },
+                { name: "corTexto", label: "Texto principal" },
+                { name: "corTextoSecundario", label: "Texto secundário" },
+              ].map((field) => (
+                <div key={field.name} className="flex items-center justify-between rounded border border-zinc-800 bg-zinc-950 p-3">
+                  <label htmlFor={`promo-${field.name}`} className="text-sm font-medium">
+                    {field.label}
+                  </label>
+                  <div className="flex items-center gap-2">
+                    <input
+                      id={`promo-${field.name}`}
+                      type="color"
+                      value={String(promo[field.name as keyof PromoConfig] ?? "#000000")}
+                      onChange={(e) =>
+                        setPromo((prev) => ({ ...prev, [(field.name as keyof PromoConfig)]: e.target.value }))
+                      }
+                      className="h-8 w-8 cursor-pointer rounded border-0 bg-transparent p-0"
+                    />
+                    <input
+                      type="text"
+                      value={String(promo[field.name as keyof PromoConfig] ?? "")}
+                      onChange={(e) =>
+                        setPromo((prev) => ({ ...prev, [(field.name as keyof PromoConfig)]: e.target.value }))
+                      }
+                      className="w-24 rounded border border-zinc-700 bg-zinc-900 px-2 py-1 text-xs text-white"
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Textos */}
+          <div className="space-y-4 rounded-lg border border-zinc-800 bg-zinc-950/50 p-4">
+            <h4 className="font-medium text-zinc-200">Textos</h4>
+            {[
+              { name: "urgenciaTexto", label: "Barra de urgência" },
+              { name: "heroTituloAntes", label: "Título — antes do destaque" },
+              { name: "heroTituloDestaque", label: "Título — destaque (rosa)" },
+              { name: "heroSubtitulo", label: "Subtítulo", multiline: true },
+              { name: "ctaTexto", label: "Texto do botão CTA" },
+              { name: "ctaSub", label: "Observação abaixo do botão" },
+              { name: "escassezLabel", label: "Label do contador" },
+              { name: "escassezTexto", label: "Texto do contador" },
+              { name: "beneficio1Titulo", label: "Benefício 1 — título" },
+              { name: "beneficio1Texto", label: "Benefício 1 — texto" },
+              { name: "beneficio2Titulo", label: "Benefício 2 — título" },
+              { name: "beneficio2Texto", label: "Benefício 2 — texto" },
+              { name: "beneficio3Titulo", label: "Benefício 3 — título" },
+              { name: "beneficio3Texto", label: "Benefício 3 — texto" },
+              { name: "footerPrivacidade", label: "Rodapé — Privacidade" },
+              { name: "footerTermos", label: "Rodapé — Termos" },
+              { name: "footerCreditNome", label: "Rodapé — Nome da agência" },
+              { name: "footerCreditUrl", label: "Rodapé — URL da agência" },
+            ].map((field) => (
+              <div key={field.name} className="space-y-2">
+                <label
+                  htmlFor={`promo-${field.name}`}
+                  className="block text-sm font-medium text-zinc-300"
+                >
+                  {field.label}
+                </label>
+                {field.multiline ? (
+                  <textarea
+                    id={`promo-${field.name}`}
+                    value={String(promo[field.name as keyof PromoConfig] ?? "")}
+                    onChange={(e) =>
+                      setPromo((prev) => ({ ...prev, [(field.name as keyof PromoConfig)]: e.target.value }))
+                    }
+                    rows={3}
+                    className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white focus:border-green-500 focus:outline-none"
+                  />
+                ) : (
+                  <input
+                    id={`promo-${field.name}`}
+                    value={String(promo[field.name as keyof PromoConfig] ?? "")}
+                    onChange={(e) =>
+                      setPromo((prev) => ({ ...prev, [(field.name as keyof PromoConfig)]: e.target.value }))
+                    }
+                    className="w-full rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white focus:border-green-500 focus:outline-none"
+                  />
+                )}
+              </div>
+            ))}
+            <div className="space-y-2">
+              <label htmlFor="promo-spotsIniciais" className="block text-sm font-medium text-zinc-300">
+                Vagas iniciais
+              </label>
+              <input
+                id="promo-spotsIniciais"
+                type="number"
+                min={0}
+                value={promo.spotsIniciais}
+                onChange={(e) =>
+                  setPromo((prev) => ({ ...prev, spotsIniciais: Number(e.target.value) }))
+                }
+                className="w-32 rounded border border-zinc-700 bg-zinc-950 px-3 py-2 text-sm text-white focus:border-green-500 focus:outline-none"
+              />
+            </div>
+          </div>
+
+          {/* Foto do mentorado */}
+          <div className="space-y-2">
+            <label htmlFor="promo-imagem" className="block text-sm font-medium">
+              Foto do mentorado (logo circular)
+            </label>
+            <input
+              id="promo-imagem"
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              className="block w-full text-sm text-zinc-400 file:mr-4 file:rounded file:border-0 file:bg-zinc-800 file:px-4 file:py-2 file:text-white"
+            />
+            {uploading ? <p className="text-xs text-zinc-400">Enviando...</p> : null}
+            {form.imagemUrl ? (
+              <img
+                src={supabaseToR2(form.imagemUrl)}
+                alt="Preview"
+                className="mt-2 h-32 w-32 rounded-lg border border-zinc-700 object-cover"
+              />
             ) : null}
           </div>
         </>

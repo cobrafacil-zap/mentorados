@@ -2,7 +2,9 @@ import { notFound } from "next/navigation";
 import { prisma } from "@/lib/prisma";
 import { LandingPage } from "@/components/LandingPage";
 import { LandingAchados } from "@/components/LandingAchados";
+import { LandingPromo } from "@/components/LandingPromo";
 import { getAchadosConfig } from "@/lib/templates";
+import { getPromoConfig } from "@/lib/templates";
 import { getSubdomain } from "@/lib/subdomain";
 import { headers } from "next/headers";
 import { Metadata } from "next";
@@ -63,11 +65,22 @@ export default async function MentoradoPage({ params }: PageProps) {
     notFound();
   }
 
-  if ((mentorado as { template?: string }).template === "achados") {
+  const template = (mentorado as { template?: string }).template;
+
+  if (template === "achados") {
     return (
       <LandingAchados
         mentorado={mentorado}
         config={getAchadosConfig((mentorado as { templateConfig?: unknown }).templateConfig)}
+      />
+    );
+  }
+
+  if (template === "promo") {
+    return (
+      <LandingPromo
+        mentorado={mentorado}
+        config={getPromoConfig((mentorado as { templateConfig?: unknown }).templateConfig)}
       />
     );
   }

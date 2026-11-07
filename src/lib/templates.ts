@@ -19,12 +19,17 @@ export const TEMPLATES = [
     nome: "Achados (carrosséis)",
     descricao: "Hero amarelo, carrosséis de ofertas/provas/cupons, CTA final com vagas.",
   },
+  {
+    id: "promo",
+    nome: "Promo Te Quero",
+    descricao: "Réplica da promotequero.com.br: barra de urgência, container branco, contador de vagas e CTA WhatsApp.",
+  },
 ] as const;
 
 export type TemplateId = (typeof TEMPLATES)[number]["id"];
 
 export function isValidTemplate(value: unknown): value is TemplateId {
-  return value === "classico" || value === "achados";
+  return value === "classico" || value === "achados" || value === "promo";
 }
 
 export interface AchadosConfig {
@@ -191,6 +196,84 @@ export const DEFAULT_ACHADOS: AchadosConfig = {
   corRodapeBg: "#1a1a1a",
   corRodapeDestaque: "#ffe600",
 };
+
+export interface PromoConfig {
+  corUrgencia: string;
+  corDestaque: string;
+  corFundo: string;
+  corTexto: string;
+  corTextoSecundario: string;
+  corBotao: string;
+  corBotaoHover: string;
+  urgenciaTexto: string;
+  heroTituloAntes: string;
+  heroTituloDestaque: string;
+  heroSubtitulo: string;
+  ctaTexto: string;
+  ctaSub: string;
+  escassezLabel: string;
+  escassezTexto: string;
+  beneficio1Titulo: string;
+  beneficio1Texto: string;
+  beneficio2Titulo: string;
+  beneficio2Texto: string;
+  beneficio3Titulo: string;
+  beneficio3Texto: string;
+  footerPrivacidade: string;
+  footerTermos: string;
+  footerCreditNome: string;
+  footerCreditUrl: string;
+  spotsIniciais: number;
+  spotsMinimo: number;
+}
+
+export const DEFAULT_PROMO: PromoConfig = {
+  corUrgencia: "#F45B8C",
+  corDestaque: "#F6C85F",
+  corFundo: "#FFF9F2",
+  corTexto: "#6B4F4F",
+  corTextoSecundario: "#8C7070",
+  corBotao: "#25D366",
+  corBotaoHover: "#20bd5a",
+  urgenciaTexto: "Últimas Vagas do Dia",
+  heroTituloAntes: "Receba as Melhores Promoções e",
+  heroTituloDestaque: "Economize de Verdade",
+  heroSubtitulo:
+    "Entre agora e receba alertas de grandes ofertas, promoções reais e cupons secretos para fazer seu dinheiro render muito mais.",
+  ctaTexto: "QUERO ENTRAR AGORA",
+  ctaSub: "Grupo Gratuito • Sem Spam",
+  escassezLabel: "Vagas Restantes",
+  escassezTexto: "disponíveis",
+  beneficio1Titulo: "Casa Completa",
+  beneficio1Texto: "Móveis, utensílios e decoração com preços que cabem no bolso.",
+  beneficio2Titulo: "Garimpo de Ofertas",
+  beneficio2Texto: "Encontramos as melhores promoções para você economizar de verdade.",
+  beneficio3Titulo: "Cupons Exclusivos",
+  beneficio3Texto: "Códigos testados para Shopee, Amazon e Magalu.",
+  footerPrivacidade: "Política de Privacidade",
+  footerTermos: "Termos de Uso",
+  footerCreditNome: "Sua Agência",
+  footerCreditUrl: "#",
+  spotsIniciais: 24,
+  spotsMinimo: 3,
+};
+
+export function getPromoConfig(raw: unknown): PromoConfig {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return { ...DEFAULT_PROMO };
+  }
+  const c = raw as Record<string, unknown>;
+  const pick = (key: keyof PromoConfig, fallback: string | number): string | number =>
+    c[key] !== undefined && c[key] !== null && String(c[key]).length > 0
+      ? (c[key] as string | number)
+      : fallback;
+  return {
+    ...DEFAULT_PROMO,
+    ...Object.fromEntries(
+      (Object.keys(DEFAULT_PROMO) as (keyof PromoConfig)[]).map((k) => [k, pick(k, DEFAULT_PROMO[k])])
+    ),
+  } as PromoConfig;
+}
 
 function asStringArray(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
